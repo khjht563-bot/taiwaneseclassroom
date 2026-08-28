@@ -1218,7 +1218,7 @@
   }
 
 // ==========================================
-  // ☁️ Google Cloud Drive API 雙向同步邏輯
+  // ☁️ Google Cloud Drive API 雙向同步邏輯 (安全無卡頓版)
   // ==========================================
   const CLIENT_ID = '525400214155-mgtf06889n43d654o67o70gg1rhtp3co.apps.googleusercontent.com';
   const API_KEY = 'AIzaSyBRxlZDQkDFYNAU3DSdejJW6BuyAMTY_nI';
@@ -1226,36 +1226,48 @@
   const SCOPES = 'https://www.googleapis.com/auth/drive.file';
   const BACKUP_FILE_NAME = 'taiwanese_classroom_db.json';
 
-  let tokenClient;
+  let tokenClient = null;
   let gapiInited = false;
   let gsisInited = false;
 
   function gapiLoaded() {
-    gapi.load('client', intializeGapiClient);
+    if (typeof gapi !== 'undefined') {
+      gapi.load('client', intializeGapiClient);
+    }
   }
 
   async function intializeGapiClient() {
-    await gapi.client.init({
-      apiKey: API_KEY,
-      discoveryDocs: [DISCOVERY_DOC],
-    });
-    gapiInited = true;
+    try {
+      await gapi.client.init({
+        apiKey: API_KEY,
+        discoveryDocs: [DISCOVERY_DOC],
+      });
+      gapiInited = true;
+    } catch (e) {
+      console.error("GAPI Init Error:", e);
+    }
   }
 
   function gisLoaded() {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: '',
-    });
-    gsisInited = true;
+    try {
+      if (typeof google !== 'undefined' && google.accounts) {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: CLIENT_ID,
+          scope: SCOPES,
+          callback: '',
+        });
+        gsisInited = true;
+      }
+    } catch (e) {
+      console.error("GIS Init Error:", e);
+    }
   }
 
   // 1. 上傳備份到 Google Drive
   async function uploadToDrive(silent = false) {
     try {
-      const accessToken = gapi.client.getToken()?.access_token;
-      if (!accessToken) return;
+      if (typeof gapi === 'undefined' || !gapi.client || !gapi.client.getToken()) return;
+      const accessToken = gapi.client.getToken().access_token;
 
       const fileContent = localStorage.getItem('smart_classroom_db') || JSON.stringify(db);
       const file = new Blob([fileContent], { type: 'application/json' });
@@ -1300,8 +1312,8 @@
   // 2. 從 Google Drive 下載備份並覆蓋/同步
   async function downloadFromDrive() {
     try {
-      const accessToken = gapi.client.getToken()?.access_token;
-      if (!accessToken) return;
+      if (typeof gapi === 'undefined' || !gapi.client || !gapi.client.getToken()) return;
+      const accessToken = gapi.client.getToken().access_token;
 
       const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILE_NAME}' and trashed=false`, {
         headers: { 'Authorization': 'Bearer ' + accessToken }
@@ -1317,7 +1329,7 @@
         const cloudDataText = await fileRes.text();
         if (cloudDataText) {
           localStorage.setItem('smart_classroom_db', cloudDataText);
-          init();
+          if (typeof init === 'function') init();
           alert('📥 已成功從 Google 雲端載入最新同步資料！');
           return;
         }
@@ -1329,10 +1341,10 @@
     }
   }
 
-  // 3. 點擊「登入 Google 雲端」按鈕觸發
+  // 3. 點擊「登入 Google 雲端」按鈕
   function handleAuthClick() {
     if (!tokenClient) {
-      alert('Google 服務載入中，請稍微再試一次！');
+      alert('Google 服務載入中，請稍後再試！');
       return;
     }
 
