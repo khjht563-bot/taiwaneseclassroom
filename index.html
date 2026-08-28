@@ -1,1471 +1,1286 @@
 <!DOCTYPE html>
-
 <html lang="zh-TW">
-
 <head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-<title>阿欣的台語教室</title>
-
-
-<!-- Google API SDK Script -->
-
-<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-
-<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
-
-
-
-<style>
-
-/* 莫蘭迪文青風格色彩與基礎設定 */
-
-:root {
-
---bg-color: #f7f5f0; /* 暖燕麥色背景 */
-
---card-bg: #ffffff; /* 純白卡片 */
-
---text-main: #4a403a; /* 暖深棕色文字 */
-
---text-muted: #8c827a; /* 莫蘭迪灰棕 */
-
---border-color: #e6e1da; /* 柔和邊框 */
-
---accent-green: #7d9688; /* 抹茶青綠 */
-
---accent-green-light: #f0f4f1;
-
---accent-red: #c8817b; /* 莫蘭迪乾燥玫瑰紅 */
-
---accent-red-light: #fbf0ef;
-
---accent-blue: #788a9c; /* 莫蘭迪藍灰 */
-
---accent-blue-light: #f0f3f6;
-
---accent-purple: #9b8c9d; /* 莫蘭迪薰衣草紫 */
-
---accent-dark: #5c524c; /* 深木質色 */
-
---shadow-sm: 0 4px 12px rgba(74, 64, 58, 0.04);
-
---shadow-md: 0 8px 20px rgba(74, 64, 58, 0.08);
-
---radius-sm: 8px;
-
---radius-md: 14px;
-
---radius-lg: 20px;
-
-}
-
-
-
-* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif; }
-
-body { background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 12px 8px; font-size: 15px; letter-spacing: 0.3px; }
-
-
-h1 {
-
-margin: 6px 0 14px 0; color: var(--text-main); font-size: 24px; font-weight: 700; text-align: center;
-
-font-family: Georgia, "PingFang TC", serif; letter-spacing: 1.5px;
-
-}
-
-h3 { margin: 0 0 8px 0; color: var(--text-main); font-size: 15px; font-weight: 600; }
-
-
-.container { max-width: 1250px; margin: 0 auto; }
-
-
-/* 頂部控制面板 */
-
-.panel {
-
-background: var(--card-bg); padding: 8px 14px; border-radius: var(--radius-md);
-
-box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 12px;
-
-display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 10px;
-
-overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap;
-
-}
-
-
-.control-item { display: flex; align-items: center; gap: 8px; flex-shrink: 0; font-size: 14px; color: var(--text-main); }
-
-
-select, input[type="text"] {
-
-padding: 6px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);
-
-font-size: 13px; background: #faf8f5; color: var(--text-main); outline: none; transition: border 0.2s;
-
-}
-
-select:focus, input[type="text"]:focus { border-color: var(--accent-blue); }
-
-
-
-/* 按鈕樣式 */
-
-button {
-
-padding: 6px 11px; border: none; border-radius: var(--radius-sm); cursor: pointer;
-
-font-weight: 600; font-size: 13px; transition: all 0.2s ease;
-
-display: inline-flex; align-items: center; justify-content: center; gap: 4px; flex-shrink: 0;
-
-letter-spacing: 0.5px;
-
-}
-
-button:hover { opacity: 0.9; transform: translateY(-1px); }
-
-button:active { transform: translateY(0); opacity: 0.8; }
-
-
-.btn-green { background-color: var(--accent-green); color: white; }
-
-.btn-red { background-color: var(--accent-red); color: white; }
-
-.btn-blue { background-color: var(--accent-blue); color: white; }
-
-.btn-purple { background-color: var(--accent-purple); color: white; }
-
-.btn-dark { background-color: var(--accent-dark); color: white; }
-
-.btn-gray { background-color: #e0dad3; color: var(--text-main); }
-
-
-/* 評分按鈕 */
-
-.btn-soft-green {
-
-background-color: var(--accent-green-light); color: var(--accent-green); border: 1px solid #cce0d5;
-
-padding: 9px 4px; font-size: 13.5px; font-weight: 600; border-radius: var(--radius-sm);
-
-}
-
-.btn-soft-red {
-
-background-color: var(--accent-red-light); color: var(--accent-red); border: 1px solid #f2d5d3;
-
-padding: 9px 4px; font-size: 13.5px; font-weight: 600; border-radius: var(--radius-sm);
-
-}
-
-
-
-/* 雲端狀態標籤 */
-
-.cloud-status {
-
-font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: var(--radius-sm);
-
-background-color: #f0eae1; color: var(--text-muted); border: 1px solid var(--border-color);
-
-letter-spacing: 0.3px;
-
-}
-
-.cloud-status.active { background-color: var(--accent-green-light); color: var(--accent-green); border-color: #cce0d5; }
-
-
-
-/* 主要版面佈局 */
-
-.main-layout { display: flex; flex-direction: column; gap: 12px; }
-
-@media (min-width: 768px) {
-
-.main-layout { display: grid; grid-template-columns: 240px 1fr; }
-
-}
-
-
-/* 待分配學生庫：2 欄網格 */
-
-.unassigned-pool {
-
-background: var(--card-bg); border-radius: var(--radius-md); padding: 12px;
-
-box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); width: 100%;
-
-}
-
-.pool-list {
-
-display: grid !important;
-
-grid-template-columns: repeat(2, 1fr) !important;
-
-gap: 6px;
-
-min-height: 50px;
-
-background: #faf8f5; border: 1.5px dashed var(--border-color); border-radius: var(--radius-sm); padding: 6px;
-
-width: 100%; align-content: start;
-
-}
-
-
-.pool-list .student-card {
-
-width: 100% !important;
-
-height: 40px !important;
-
-padding: 3px 8px !important;
-
-justify-content: center !important;
-
-}
-
-
-
-/* 座位區 */
-
-.classroom-area { display: flex; flex-direction: column; gap: 6px; }
-
-
-
-.group-headers { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
-
-.group-card {
-
-background: var(--card-bg); border-top: 3.5px solid var(--accent-blue); border-radius: var(--radius-sm);
-
-padding: 5px 4px; text-align: center; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);
-
-display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; box-shadow: var(--shadow-sm);
-
-}
-
-.group-card h4 { margin: 0; color: var(--text-main); font-size: 14.5px; font-weight: 700; white-space: nowrap; }
-
-
-.group-score-row {
-
-display: flex; align-items: center; justify-content: space-between; gap: 2px; width: 100%; padding: 0 2px;
-
-}
-
-.group-score-badge { font-weight: 700; font-size: 13.5px; color: var(--accent-green); }
-
-.group-btn-box { display: flex; align-items: center; gap: 3px; }
-
-.group-btn-box button { padding: 1px 6px; font-size: 11px; border-radius: 4px; height: 22px; }
-
-
-
-/* 6x6 座位表 */
-
-.grid-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
-
-.seat-slot {
-
-background: #ffffff; border: 1.5px dashed #e2ded8; border-radius: var(--radius-sm);
-
-height: 54px; padding: 3px; position: relative;
-
-display: flex; flex-direction: column; justify-content: center; align-items: center;
-
-transition: background 0.2s, border-color 0.2s;
-
-}
-
-.seat-slot.drag-over { background: var(--accent-blue-light); border-color: var(--accent-blue); }
-
-
-
-/* 學生名牌卡片 */
-
-.student-card {
-
-width: 100%; height: 100%; background: #faf8f5; border: 1px solid var(--border-color); border-radius: 6px;
-
-padding: 2px 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-
-user-select: none; transition: all 0.15s ease;
-
-display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 4px;
-
-}
-
-.student-card:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.04); border-color: #d6cfc7; }
-
-.student-card.absent { background-color: var(--accent-red-light); border-color: #f5c4c0; }
-
-.student-card.scored { background-color: #eee9e3 !important; border-color: #c7beaf !important; }
-
-
-.card-name {
-
-font-weight: 600; font-size: 13.5px; color: var(--text-main);
-
-line-height: 1.1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; text-align: left;
-
-}
-
-.pool-list .card-name { text-align: center; }
-
-
-
-.card-scores {
-
-display: flex; align-items: center; justify-content: flex-end; gap: 2px; flex-shrink: 0;
-
-}
-
-.badge-personal { color: var(--accent-blue); font-weight: 700; font-size: 12.5px; }
-
-.badge-absent { color: var(--accent-red); font-weight: 700; font-size: 11.5px; }
-
-
-
-.podium {
-
-background: var(--accent-dark); color: #f7f5f0; text-align: center; padding: 6px;
-
-font-weight: 600; border-radius: var(--radius-sm); font-size: 13px; letter-spacing: 3px; margin-top: 4px;
-
-box-shadow: var(--shadow-sm);
-
-}
-
-
-
-/* 統計區塊 */
-
-.stats-section {
-
-background: var(--card-bg); border-radius: var(--radius-md); padding: 14px; margin-top: 12px;
-
-box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);
-
-}
-
-.stats-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-
-.stats-container { overflow-x: auto; }
-
-
-
-table.stats-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13.5px; table-layout: fixed; }
-
-table.stats-table th, table.stats-table td { border: 1px solid var(--border-color); padding: 7px 4px; word-break: break-all; }
-
-table.stats-table th { background: #faf8f5; color: var(--text-main); font-weight: 600; position: sticky; top: 0; z-index: 10; font-size: 13.5px; white-space: nowrap; }
-
-
-
-.stats-cards-grid { display: none; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
-
-.stat-card-item {
-
-background: #faf8f5; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px;
-
-display: flex; flex-direction: column; gap: 4px; font-size: 13px;
-
-}
-
-.stat-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
-
-.stat-card-name { font-weight: bold; font-size: 14.5px; color: var(--text-main); }
-
-.stat-card-group { font-size: 12px; color: var(--text-muted); }
-
-.stat-card-row { display: flex; justify-content: space-between; align-items: center; }
-
-
-
-@media (max-width: 640px) {
-
-table.stats-table { display: none; }
-
-.stats-cards-grid { display: grid; }
-
-}
-
-
-
-.clickable-absent { cursor: pointer; text-decoration: underline; font-weight: 600; }
-
-
-
-/* Modal 彈出視窗 */
-
-.modal {
-
-display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-
-background: rgba(74, 64, 58, 0.4); backdrop-filter: blur(2px); justify-content: center; align-items: center; z-index: 1000; padding: 10px;
-
-}
-
-.modal-content {
-
-background: var(--card-bg); padding: 16px; border-radius: var(--radius-lg); width: 100%; max-width: 440px;
-
-box-shadow: var(--shadow-md); border: 1px solid var(--border-color); max-height: 95vh; overflow-y: auto; font-size: 14.5px;
-
-}
-
-.modal-content textarea { width: 100%; height: 110px; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 14px; background: #faf8f5; outline: none; }
-
-
-
-.student-header-box {
-
-display: flex; justify-content: space-between; align-items: center;
-
-background: #faf8f5; border: 1px solid var(--border-color); padding: 8px 12px;
-
-border-radius: var(--radius-md); margin-bottom: 8px;
-
-}
-
-.student-info-left { text-align: left; }
-
-.student-info-name { font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0; }
-
-.student-info-group { font-size: 12.5px; color: var(--text-muted); margin-top: 1px; }
-
-.student-score-right {
-
-display: flex; flex-direction: column; align-items: center; justify-content: center;
-
-background: var(--accent-blue-light); border: 1px solid #d8e2eb; border-radius: var(--radius-sm); padding: 2px 12px;
-
-}
-
-.score-label { font-size: 11px; color: var(--accent-blue); font-weight: 600; }
-
-.score-value { font-size: 20px; font-weight: 800; color: var(--accent-blue); line-height: 1.1; }
-
-
-
-.quick-btn-grid-plus { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
-
-.quick-btn-grid-minus { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
-
-
-
-.checkbox-group { text-align: left; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
-
-.checkbox-group label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14.5px; }
-
-
-
-.log-list { list-style: none; padding: 0; margin: 8px 0; max-height: 250px; overflow-y: auto; font-size: 13px; }
-
-.log-item { padding: 6px 0; border-bottom: 1px solid var(--border-color); text-align: left; }
-
-.log-time { color: var(--text-muted); font-size: 12px; margin-right: 4px; }
-
-
-
-.danger-zone { border: 1px solid #f5c4c0; background: var(--accent-red-light); padding: 10px; border-radius: var(--radius-sm); margin-top: 8px; }
-
-</style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>阿欣的台語教室</title>
+  
+  <!-- Google API SDK Script -->
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
+  <style>
+    /* 莫蘭迪文青風格色彩與基礎設定 */
+    :root {
+      --bg-color: #f7f5f0;           /* 暖燕麥色背景 */
+      --card-bg: #ffffff;            /* 純白卡片 */
+      --text-main: #4a403a;          /* 暖深棕色文字 */
+      --text-muted: #8c827a;         /* 莫蘭迪灰棕 */
+      --border-color: #e6e1da;       /* 柔和邊框 */
+      --accent-green: #7d9688;       /* 抹茶青綠 */
+      --accent-green-light: #f0f4f1; 
+      --accent-red: #c8817b;         /* 莫蘭迪乾燥玫瑰紅 */
+      --accent-red-light: #fbf0ef;
+      --accent-blue: #788a9c;        /* 莫蘭迪藍灰 */
+      --accent-blue-light: #f0f3f6;
+      --accent-purple: #9b8c9d;      /* 莫蘭迪薰衣草紫 */
+      --accent-dark: #5c524c;        /* 深木質色 */
+      --shadow-sm: 0 4px 12px rgba(74, 64, 58, 0.04);
+      --shadow-md: 0 8px 20px rgba(74, 64, 58, 0.08);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 12px 8px; font-size: 15px; letter-spacing: 0.3px; }
+    
+    h1 { 
+      margin: 6px 0 14px 0; color: var(--text-main); font-size: 24px; font-weight: 700; text-align: center; 
+      font-family: Georgia, "PingFang TC", serif; letter-spacing: 1.5px;
+    }
+    h3 { margin: 0 0 8px 0; color: var(--text-main); font-size: 15px; font-weight: 600; }
+    
+    .container { max-width: 1250px; margin: 0 auto; }
+    
+    /* 頂部控制面板 */
+    .panel {
+      background: var(--card-bg); padding: 8px 14px; border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 12px;
+      display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 10px;
+      overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap;
+    }
+    
+    .control-item { display: flex; align-items: center; gap: 8px; flex-shrink: 0; font-size: 14px; color: var(--text-main); }
+    
+    select, input[type="text"] {
+      padding: 6px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); 
+      font-size: 13px; background: #faf8f5; color: var(--text-main); outline: none; transition: border 0.2s;
+    }
+    select:focus, input[type="text"]:focus { border-color: var(--accent-blue); }
+
+    /* 按鈕樣式 */
+    button {
+      padding: 6px 11px; border: none; border-radius: var(--radius-sm); cursor: pointer;
+      font-weight: 600; font-size: 13px; transition: all 0.2s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 4px; flex-shrink: 0;
+      letter-spacing: 0.5px;
+    }
+    button:hover { opacity: 0.9; transform: translateY(-1px); }
+    button:active { transform: translateY(0); opacity: 0.8; }
+    
+    .btn-green { background-color: var(--accent-green); color: white; }
+    .btn-red { background-color: var(--accent-red); color: white; }
+    .btn-blue { background-color: var(--accent-blue); color: white; }
+    .btn-purple { background-color: var(--accent-purple); color: white; }
+    .btn-dark { background-color: var(--accent-dark); color: white; }
+    .btn-gray { background-color: #e0dad3; color: var(--text-main); }
+    
+    /* 評分按鈕 */
+    .btn-soft-green { 
+      background-color: var(--accent-green-light); color: var(--accent-green); border: 1px solid #cce0d5; 
+      padding: 9px 4px; font-size: 13.5px; font-weight: 600; border-radius: var(--radius-sm);
+    }
+    .btn-soft-red { 
+      background-color: var(--accent-red-light); color: var(--accent-red); border: 1px solid #f2d5d3; 
+      padding: 9px 4px; font-size: 13.5px; font-weight: 600; border-radius: var(--radius-sm);
+    }
+
+    /* 雲端狀態標籤 */
+    .cloud-status {
+      font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: var(--radius-sm);
+      background-color: #f0eae1; color: var(--text-muted); border: 1px solid var(--border-color);
+      letter-spacing: 0.3px;
+    }
+    .cloud-status.active { background-color: var(--accent-green-light); color: var(--accent-green); border-color: #cce0d5; }
+
+    /* 主要版面佈局 */
+    .main-layout { display: flex; flex-direction: column; gap: 12px; }
+    @media (min-width: 768px) {
+      .main-layout { display: grid; grid-template-columns: 240px 1fr; }
+    }
+    
+    /* 待分配學生庫：2 欄網格 */
+    .unassigned-pool {
+      background: var(--card-bg); border-radius: var(--radius-md); padding: 12px;
+      box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); width: 100%;
+    }
+    .pool-list {
+      display: grid !important; 
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 6px; 
+      min-height: 50px;
+      background: #faf8f5; border: 1.5px dashed var(--border-color); border-radius: var(--radius-sm); padding: 6px;
+      width: 100%; align-content: start;
+    }
+    
+    .pool-list .student-card { 
+      width: 100% !important; 
+      height: 40px !important; 
+      padding: 3px 8px !important;
+      justify-content: center !important;
+    }
+
+    /* 座位區 */
+    .classroom-area { display: flex; flex-direction: column; gap: 6px; }
+
+    .group-headers { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+    .group-card {
+      background: var(--card-bg); border-top: 3.5px solid var(--accent-blue); border-radius: var(--radius-sm);
+      padding: 5px 4px; text-align: center; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);
+      display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; box-shadow: var(--shadow-sm);
+    }
+    .group-card h4 { margin: 0; color: var(--text-main); font-size: 14.5px; font-weight: 700; white-space: nowrap; }
+    
+    .group-score-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 2px; width: 100%; padding: 0 2px;
+    }
+    .group-score-badge { font-weight: 700; font-size: 13.5px; color: var(--accent-green); }
+    .group-btn-box { display: flex; align-items: center; gap: 3px; }
+    .group-btn-box button { padding: 1px 6px; font-size: 11px; border-radius: 4px; height: 22px; }
+
+    /* 6x6 座位表 */
+    .grid-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+    .seat-slot {
+      background: #ffffff; border: 1.5px dashed #e2ded8; border-radius: var(--radius-sm);
+      height: 54px; padding: 3px; position: relative;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .seat-slot.drag-over { background: var(--accent-blue-light); border-color: var(--accent-blue); }
+
+    /* 學生名牌卡片 */
+    .student-card {
+      width: 100%; height: 100%; background: #faf8f5; border: 1px solid var(--border-color); border-radius: 6px;
+      padding: 2px 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      user-select: none; transition: all 0.15s ease;
+      display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 4px;
+    }
+    .student-card:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.04); border-color: #d6cfc7; }
+    .student-card.absent { background-color: var(--accent-red-light); border-color: #f5c4c0; }
+    .student-card.scored { background-color: #eee9e3 !important; border-color: #c7beaf !important; }
+    
+    .card-name { 
+      font-weight: 600; font-size: 13.5px; color: var(--text-main); 
+      line-height: 1.1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; text-align: left;
+    }
+    .pool-list .card-name { text-align: center; }
+
+    .card-scores { 
+      display: flex; align-items: center; justify-content: flex-end; gap: 2px; flex-shrink: 0;
+    }
+    .badge-personal { color: var(--accent-blue); font-weight: 700; font-size: 12.5px; }
+    .badge-absent { color: var(--accent-red); font-weight: 700; font-size: 11.5px; }
+
+    .podium {
+      background: var(--accent-dark); color: #f7f5f0; text-align: center; padding: 6px;
+      font-weight: 600; border-radius: var(--radius-sm); font-size: 13px; letter-spacing: 3px; margin-top: 4px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* 統計區塊 */
+    .stats-section {
+      background: var(--card-bg); border-radius: var(--radius-md); padding: 14px; margin-top: 12px;
+      box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);
+    }
+    .stats-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+    .stats-container { overflow-x: auto; }
+
+    table.stats-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13.5px; table-layout: fixed; }
+    table.stats-table th, table.stats-table td { border: 1px solid var(--border-color); padding: 7px 4px; word-break: break-all; }
+    table.stats-table th { background: #faf8f5; color: var(--text-main); font-weight: 600; position: sticky; top: 0; z-index: 10; font-size: 13.5px; white-space: nowrap; }
+
+    .stats-cards-grid { display: none; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+    .stat-card-item {
+      background: #faf8f5; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px;
+      display: flex; flex-direction: column; gap: 4px; font-size: 13px;
+    }
+    .stat-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
+    .stat-card-name { font-weight: bold; font-size: 14.5px; color: var(--text-main); }
+    .stat-card-group { font-size: 12px; color: var(--text-muted); }
+    .stat-card-row { display: flex; justify-content: space-between; align-items: center; }
+
+    @media (max-width: 640px) {
+      table.stats-table { display: none; }
+      .stats-cards-grid { display: grid; }
+    }
+
+    .clickable-absent { cursor: pointer; text-decoration: underline; font-weight: 600; }
+
+    /* Modal 彈出視窗 */
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(74, 64, 58, 0.4); backdrop-filter: blur(2px); justify-content: center; align-items: center; z-index: 1000; padding: 10px;
+    }
+    .modal-content {
+      background: var(--card-bg); padding: 16px; border-radius: var(--radius-lg); width: 100%; max-width: 440px;
+      box-shadow: var(--shadow-md); border: 1px solid var(--border-color); max-height: 95vh; overflow-y: auto; font-size: 14.5px;
+    }
+    .modal-content textarea { width: 100%; height: 110px; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 14px; background: #faf8f5; outline: none; }
+
+    .student-header-box {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #faf8f5; border: 1px solid var(--border-color); padding: 8px 12px;
+      border-radius: var(--radius-md); margin-bottom: 8px;
+    }
+    .student-info-left { text-align: left; }
+    .student-info-name { font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0; }
+    .student-info-group { font-size: 12.5px; color: var(--text-muted); margin-top: 1px; }
+    .student-score-right {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: var(--accent-blue-light); border: 1px solid #d8e2eb; border-radius: var(--radius-sm); padding: 2px 12px;
+    }
+    .score-label { font-size: 11px; color: var(--accent-blue); font-weight: 600; }
+    .score-value { font-size: 20px; font-weight: 800; color: var(--accent-blue); line-height: 1.1; }
+
+    .quick-btn-grid-plus { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .quick-btn-grid-minus { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+
+    .checkbox-group { text-align: left; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
+    .checkbox-group label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14.5px; }
+
+    .log-list { list-style: none; padding: 0; margin: 8px 0; max-height: 250px; overflow-y: auto; font-size: 13px; }
+    .log-item { padding: 6px 0; border-bottom: 1px solid var(--border-color); text-align: left; }
+    .log-time { color: var(--text-muted); font-size: 12px; margin-right: 4px; }
+
+    .danger-zone { border: 1px solid #f5c4c0; background: var(--accent-red-light); padding: 10px; border-radius: var(--radius-sm); margin-top: 8px; }
+  </style>
 </head>
-
 <body>
 
-
-
 <div class="container">
+  <h1>阿欣的台語教室</h1>
 
-<h1>阿欣的台語教室</h1>
+  <!-- 頂部控制面板 -->
+  <div class="panel">
+    <div class="control-item">
+      <label><b>班級：</b></label>
+      <select id="class-select" onchange="switchClass()"></select>
+      <button class="btn-dark" onclick="addClassPrompt()">+ 新增</button>
+      <button class="btn-red" style="padding: 5px 6px; font-size: 12px;" onclick="deleteClassPrompt()">🗑️ 刪除班級</button>
+    </div>
 
+    <div class="control-item">
+      <label><b>週次：</b></label>
+      <select id="week-select" onchange="switchWeek()"></select>
+    </div>
 
+    <div class="control-item">
+      <button class="btn-blue" onclick="openImportModal()">📋 匯入</button>
+      <button class="btn-purple" onclick="openLogModal()">📜 歷程</button>
+      <button class="btn-green" onclick="openExportModal()">📥 匯出</button>
+      <button class="btn-red" onclick="openClearModal()">🗑️ 清除</button>
+      <button type="button" class="btn-blue" onclick="handleAuthClick()">🔑 登入 / 載入雲端</button>
+      <span class="cloud-status" id="cloud-status-badge">☁️ 未登入同步</span>
+    </div>
+  </div>
 
-<!-- 頂部控制面板 -->
+  <!-- 主要內容區 -->
+  <div class="main-layout">
+    <div class="unassigned-pool">
+      <h3>待分配學生 (<span id="unassigned-count">0</span>)</h3>
+      <div class="pool-list" id="unassigned-list" ondrop="dropToPool(event)" ondragover="allowDrop(event)"></div>
+    </div>
 
-<div class="panel">
+    <div class="classroom-area">
+      <div class="group-headers" id="group-headers"></div>
+      <div class="grid-container" id="grid-container"></div>
+      <div class="podium">講桌 / 黑板方向</div>
+    </div>
+  </div>
 
-<div class="control-item">
+  <!-- 統計區塊 -->
+  <div class="stats-section">
+    <div class="stats-header">
+      <h3 style="margin: 0;">學生分數與出缺席統計</h3>
+      <div style="display: flex; align-items: center; gap: 4px; font-size: 13.5px;">
+        <label>區間：</label>
+        <select id="stats-start-week" onchange="renderStatsTable()"></select>
+        <span>至</span>
+        <select id="stats-end-week" onchange="renderStatsTable()"></select>
+      </div>
+    </div>
+    
+    <div class="stats-container">
+      <table class="stats-table">
+        <colgroup>
+          <col style="width: 24%;">
+          <col style="width: 14%;">
+          <col style="width: 15%;">
+          <col style="width: 15%;">
+          <col style="width: 16%;">
+          <col style="width: 16%;">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>姓名</th>
+            <th>組別</th>
+            <th>個人積分</th>
+            <th>小組積分</th>
+            <th>區間缺席</th>
+            <th>總缺席</th>
+          </tr>
+        </thead>
+        <tbody id="stats-tbody"></tbody>
+      </table>
 
-<label><b>班級：</b></label>
-
-<select id="class-select" onchange="switchClass()"></select>
-
-<button class="btn-dark" onclick="addClassPrompt()">+ 新增</button>
-
-<button class="btn-red" style="padding: 5px 6px; font-size: 12px;" onclick="deleteClassPrompt()">🗑️ 刪除班級</button>
-
+      <div class="stats-cards-grid" id="stats-cards-grid"></div>
+    </div>
+  </div>
 </div>
-
-
-
-<div class="control-item">
-
-<label><b>週次：</b></label>
-
-<select id="week-select" onchange="switchWeek()"></select>
-
-</div>
-
-
-
-<div class="control-item">
-
-<button class="btn-blue" onclick="openImportModal()">📋 匯入</button>
-
-<button class="btn-purple" onclick="openLogModal()">📜 歷程</button>
-
-<button class="btn-green" onclick="openExportModal()">📥 匯出</button>
-
-<button class="btn-red" onclick="openClearModal()">🗑️ 清除</button>
-
-<button type="button" class="btn-blue" onclick="handleAuthClick()">🔑 登入 / 載入雲端</button>
-
-<span class="cloud-status" id="cloud-status-badge">☁️ 未登入同步</span>
-
-</div>
-
-</div>
-
-
-
-<!-- 主要內容區 -->
-
-<div class="main-layout">
-
-<div class="unassigned-pool">
-
-<h3>待分配學生 (<span id="unassigned-count">0</span>)</h3>
-
-<div class="pool-list" id="unassigned-list" ondrop="dropToPool(event)" ondragover="allowDrop(event)"></div>
-
-</div>
-
-
-
-<div class="classroom-area">
-
-<div class="group-headers" id="group-headers"></div>
-
-<div class="grid-container" id="grid-container"></div>
-
-<div class="podium">講桌 / 黑板方向</div>
-
-</div>
-
-</div>
-
-
-
-<!-- 統計區塊 -->
-
-<div class="stats-section">
-
-<div class="stats-header">
-
-<h3 style="margin: 0;">學生分數與出缺席統計</h3>
-
-<div style="display: flex; align-items: center; gap: 4px; font-size: 13.5px;">
-
-<label>區間：</label>
-
-<select id="stats-start-week" onchange="renderStatsTable()"></select>
-
-<span>至</span>
-
-<select id="stats-end-week" onchange="renderStatsTable()"></select>
-
-</div>
-
-</div>
-
-
-<div class="stats-container">
-
-<table class="stats-table">
-
-<colgroup>
-
-<col style="width: 24%;">
-
-<col style="width: 14%;">
-
-<col style="width: 15%;">
-
-<col style="width: 15%;">
-
-<col style="width: 16%;">
-
-<col style="width: 16%;">
-
-</colgroup>
-
-<thead>
-
-<tr>
-
-<th>姓名</th>
-
-<th>組別</th>
-
-<th>個人積分</th>
-
-<th>小組積分</th>
-
-<th>區間缺席</th>
-
-<th>總缺席</th>
-
-</tr>
-
-</thead>
-
-<tbody id="stats-tbody"></tbody>
-
-</table>
-
-
-
-<div class="stats-cards-grid" id="stats-cards-grid"></div>
-
-</div>
-
-</div>
-
-</div>
-
-
 
 <!-- Modal 1: 匯入學生名單 -->
-
 <div class="modal" id="import-modal" onclick="closeModalOnOutsideClick(event, 'import-modal')">
-
-<div class="modal-content" onclick="event.stopPropagation()">
-
-<h3>匯入學生名單</h3>
-
-<p style="font-size: 13.5px; color: var(--text-muted);">請貼上學生姓名（一行一個名字）：</p>
-
-<textarea id="import-text" placeholder="張小明&#10;李大華&#10;王美麗"></textarea>
-
-<div style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 12px;">
-
-<button class="btn-gray" onclick="closeModal('import-modal')">取消</button>
-
-<button class="btn-blue" onclick="processImport()">確定匯入</button>
-
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3>匯入學生名單</h3>
+    <p style="font-size: 13.5px; color: var(--text-muted);">請貼上學生姓名（一行一個名字）：</p>
+    <textarea id="import-text" placeholder="張小明&#10;李大華&#10;王美麗"></textarea>
+    <div style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 12px;">
+      <button class="btn-gray" onclick="closeModal('import-modal')">取消</button>
+      <button class="btn-blue" onclick="processImport()">確定匯入</button>
+    </div>
+  </div>
 </div>
-
-</div>
-
-</div>
-
-
 
 <!-- Modal 2: 個人學生操作 -->
-
 <div class="modal" id="student-modal" onclick="closeModalOnOutsideClick(event, 'student-modal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="student-header-box">
+      <div class="student-info-left">
+        <h3 class="student-info-name" id="modal-student-name">學生姓名</h3>
+        <div class="student-info-group" id="modal-student-group">第 1 組</div>
+      </div>
+      <div class="student-score-right">
+        <span class="score-label">本週分數</span>
+        <span class="score-value" id="modal-student-score">0</span>
+      </div>
+    </div>
 
-<div class="modal-content" onclick="event.stopPropagation()">
+    <div style="margin: 4px 0; text-align: left;">
+      <h4 style="margin: 0 0 4px 0; color: var(--accent-green); font-size: 13.5px;">🟢 加分項目</h4>
+      <div class="quick-btn-grid-plus">
+        <button class="btn-soft-green" onclick="adjustPersonalScore(2, '回答問題')">回答問題 (+2)</button>
+        <button class="btn-soft-green" onclick="adjustPersonalScore(4, '講甲誠好')">講甲誠好 (+4)</button>
+        <button class="btn-soft-green" onclick="adjustPersonalScore(2, '鬥相共')">鬥相共 (+2)</button>
+        <button class="btn-soft-green" onclick="adjustPersonalScore(2, '認真討論')">認真討論 (+2)</button>
+      </div>
+    </div>
 
-<div class="student-header-box">
-
-<div class="student-info-left">
-
-<h3 class="student-info-name" id="modal-student-name">學生姓名</h3>
-
-<div class="student-info-group" id="modal-student-group">第 1 組</div>
-
+    <div style="margin: 6px 0; text-align: left;">
+      <h4 style="margin: 4px 0 4px 0; color: var(--accent-red); font-size: 13.5px;">🔴 扣分項目</h4>
+      <div class="quick-btn-grid-minus">
+        <button class="btn-soft-red" onclick="adjustPersonalScore(-1, '上課晏到')">上課晏到 (-1)</button>
+        <button class="btn-soft-red" onclick="adjustPersonalScore(-1, '無紮課本/簿仔')">無紮課本/簿仔 (-1)</button>
+        <button class="btn-soft-red" onclick="adjustPersonalScore(-2, '兩項無紮')">兩項無紮 (-2)</button>
+        <button class="btn-soft-red" onclick="adjustPersonalScore(-1, '無認真討論')">無認真討論 (-1)</button>
+        <button class="btn-soft-red" onclick="adjustPersonalScore(-1, '影響上課')" style="grid-column: span 2;">影響上課 (-1)</button>
+      </div>
+    </div>
+    
+    <div style="margin-top: 8px; border-top: 1px dashed var(--border-color); padding-top: 8px; display: flex; gap: 6px; align-items: center;">
+      <button class="btn-green" style="flex: 1; padding: 6px; font-size: 13.5px;" onclick="adjustPersonalScore(1, '手動加分')">+1 分</button>
+      <button class="btn-red" style="flex: 1; padding: 6px; font-size: 13.5px;" onclick="adjustPersonalScore(-1, '手動扣分')">-1 分</button>
+      <button class="btn-blue" id="modal-absent-btn" style="flex: 1.5; padding: 6px; font-size: 13.5px;" onclick="toggleAbsent()">標記缺席</button>
+    </div>
+  </div>
 </div>
-
-<div class="student-score-right">
-
-<span class="score-label">本週分數</span>
-
-<span class="score-value" id="modal-student-score">0</span>
-
-</div>
-
-</div>
-
-
-
-<div style="margin: 4px 0; text-align: left;">
-
-<h4 style="margin: 0 0 4px 0; color: var(--accent-green); font-size: 13.5px;">🟢 加分項目</h4>
-
-<div class="quick-btn-grid-plus">
-
-<button class="btn-soft-green" onclick="adjustPersonalScore(2, '回答問題')">回答問題 (+2)</button>
-
-<button class="btn-soft-green" onclick="adjustPersonalScore(4, '講甲誠好')">講甲誠好 (+4)</button>
-
-<button class="btn-soft-green" onclick="adjustPersonalScore(2, '鬥相共')">鬥相共 (+2)</button>
-
-<button class="btn-soft-green" onclick="adjustPersonalScore(2, '認真討論')">認真討論 (+2)</button>
-
-</div>
-
-</div>
-
-
-
-<div style="margin: 6px 0; text-align: left;">
-
-<h4 style="margin: 4px 0 4px 0; color: var(--accent-red); font-size: 13.5px;">🔴 扣分項目</h4>
-
-<div class="quick-btn-grid-minus">
-
-<button class="btn-soft-red" onclick="adjustPersonalScore(-1, '上課晏到')">上課晏到 (-1)</button>
-
-<button class="btn-soft-red" onclick="adjustPersonalScore(-1, '無紮課本/簿仔')">無紮課本/簿仔 (-1)</button>
-
-<button class="btn-soft-red" onclick="adjustPersonalScore(-2, '兩項無紮')">兩項無紮 (-2)</button>
-
-<button class="btn-soft-red" onclick="adjustPersonalScore(-1, '無認真討論')">無認真討論 (-1)</button>
-
-<button class="btn-soft-red" onclick="adjustPersonalScore(-1, '影響上課')" style="grid-column: span 2;">影響上課 (-1)</button>
-
-</div>
-
-</div>
-
-
-<div style="margin-top: 8px; border-top: 1px dashed var(--border-color); padding-top: 8px; display: flex; gap: 6px; align-items: center;">
-
-<button class="btn-green" style="flex: 1; padding: 6px; font-size: 13.5px;" onclick="adjustPersonalScore(1, '手動加分')">+1 分</button>
-
-<button class="btn-red" style="flex: 1; padding: 6px; font-size: 13.5px;" onclick="adjustPersonalScore(-1, '手動扣分')">-1 分</button>
-
-<button class="btn-blue" id="modal-absent-btn" style="flex: 1.5; padding: 6px; font-size: 13.5px;" onclick="toggleAbsent()">標記缺席</button>
-
-</div>
-
-</div>
-
-</div>
-
-
 
 <!-- Modal 3: 歷程紀錄 -->
-
 <div class="modal" id="log-modal" onclick="closeModalOnOutsideClick(event, 'log-modal')">
-
-<div class="modal-content" onclick="event.stopPropagation()">
-
-<h3>操作歷程紀錄</h3>
-
-<ul class="log-list" id="log-list"></ul>
-
-<div style="display:flex; justify-content: flex-end; margin-top: 10px;">
-
-<button class="btn-gray" onclick="closeModal('log-modal')">關閉</button>
-
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3>操作歷程紀錄</h3>
+    <ul class="log-list" id="log-list"></ul>
+    <div style="display:flex; justify-content: flex-end; margin-top: 10px;">
+      <button class="btn-gray" onclick="closeModal('log-modal')">關閉</button>
+    </div>
+  </div>
 </div>
-
-</div>
-
-</div>
-
-
 
 <!-- Modal 4: 自訂匯出 -->
-
 <div class="modal" id="export-modal" onclick="closeModalOnOutsideClick(event, 'export-modal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3>自訂匯出內容</h3>
+    <p style="font-size: 13.5px; color: var(--text-muted);">請勾選希望匯出至 Excel (CSV) 的項目：</p>
+    
+    <div class="checkbox-group">
+      <label><input type="checkbox" id="chk-scores" checked> 匯出指定區間個人與小組積分</label>
+      <label><input type="checkbox" id="chk-range-absent" checked> 匯出指定區間缺席次數與細節</label>
+      <label><input type="checkbox" id="chk-total-absent" checked> 匯出歷史累計總缺席次數</label>
+      <label><input type="checkbox" id="chk-logs" checked> 匯出完整操作歷程紀錄</label>
+    </div>
 
-<div class="modal-content" onclick="event.stopPropagation()">
-
-<h3>自訂匯出內容</h3>
-
-<p style="font-size: 13.5px; color: var(--text-muted);">請勾選希望匯出至 Excel (CSV) 的項目：</p>
-
-
-<div class="checkbox-group">
-
-<label><input type="checkbox" id="chk-scores" checked> 匯出指定區間個人與小組積分</label>
-
-<label><input type="checkbox" id="chk-range-absent" checked> 匯出指定區間缺席次數與細節</label>
-
-<label><input type="checkbox" id="chk-total-absent" checked> 匯出歷史累計總缺席次數</label>
-
-<label><input type="checkbox" id="chk-logs" checked> 匯出完整操作歷程紀錄</label>
-
+    <div style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
+      <button class="btn-gray" onclick="closeModal('export-modal')">取消</button>
+      <button class="btn-green" onclick="processExport()">匯出檔案</button>
+    </div>
+  </div>
 </div>
-
-
-
-<div style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
-
-<button class="btn-gray" onclick="closeModal('export-modal')">取消</button>
-
-<button class="btn-green" onclick="processExport()">匯出檔案</button>
-
-</div>
-
-</div>
-
-</div>
-
-
 
 <!-- Modal 5: 清除資料 -->
-
 <div class="modal" id="clear-modal" onclick="closeModalOnOutsideClick(event, 'clear-modal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3>🗑️ 清除班級資料</h3>
+    <p style="font-size: 13.5px; color: var(--text-muted);">請選擇您欲執行的動作（僅針對當前班級）：</p>
+    
+    <div class="danger-zone">
+      <h4 style="margin: 0 0 4px 0; color: var(--accent-red); font-size: 14.5px;">選項 A：重設成績與出缺席</h4>
+      <p style="margin: 0 0 6px 0; font-size: 12.5px; color: var(--text-muted);">保留學生名單與座位，僅將積分歸零並清空出缺席。</p>
+      <button class="btn-red" onclick="executeClear('reset_scores')">重設成績與紀錄</button>
+    </div>
 
-<div class="modal-content" onclick="event.stopPropagation()">
+    <div class="danger-zone">
+      <h4 style="margin: 0 0 4px 0; color: var(--accent-red); font-size: 14.5px;">選項 B：清空當前班級所有資料</h4>
+      <p style="margin: 0 0 6px 0; font-size: 12.5px; color: var(--text-muted);">刪除當前班級的所有學生名單、座位與歷程。</p>
+      <button class="btn-red" style="background-color: #a85852;" onclick="executeClear('clear_all')">清空全班學生名單</button>
+    </div>
 
-<h3>🗑️ 清除班級資料</h3>
-
-<p style="font-size: 13.5px; color: var(--text-muted);">請選擇您欲執行的動作（僅針對當前班級）：</p>
-
-
-<div class="danger-zone">
-
-<h4 style="margin: 0 0 4px 0; color: var(--accent-red); font-size: 14.5px;">選項 A：重設成績與出缺席</h4>
-
-<p style="margin: 0 0 6px 0; font-size: 12.5px; color: var(--text-muted);">保留學生名單與座位，僅將積分歸零並清空出缺席。</p>
-
-<button class="btn-red" onclick="executeClear('reset_scores')">重設成績與紀錄</button>
-
+    <div style="display:flex; justify-content: flex-end; margin-top: 12px;">
+      <button class="btn-gray" onclick="closeModal('clear-modal')">取消</button>
+    </div>
+  </div>
 </div>
-
-
-
-<div class="danger-zone">
-
-<h4 style="margin: 0 0 4px 0; color: var(--accent-red); font-size: 14.5px;">選項 B：清空當前班級所有資料</h4>
-
-<p style="margin: 0 0 6px 0; font-size: 12.5px; color: var(--text-muted);">刪除當前班級的所有學生名單、座位與歷程。</p>
-
-<button class="btn-red" style="background-color: #a85852;" onclick="executeClear('clear_all')">清空全班學生名單</button>
-
-</div>
-
-
-
-<div style="display:flex; justify-content: flex-end; margin-top: 12px;">
-
-<button class="btn-gray" onclick="closeModal('clear-modal')">取消</button>
-
-</div>
-
-</div>
-
-</div>
-
-
 
 <!-- Modal 6: 查看缺席週次明細 -->
-
 <div class="modal" id="absent-details-modal" onclick="closeModalOnOutsideClick(event, 'absent-details-modal')">
-
-<div class="modal-content" onclick="event.stopPropagation()">
-
-<h3 id="absent-detail-name">學生缺席紀錄細節</h3>
-
-<div style="margin: 10px 0;">
-
-<h4 style="margin-bottom: 4px; font-size: 14px;">📍 指定統計區間缺席：</h4>
-
-<p id="absent-range-weeks" style="font-size: 13.5px; color: var(--accent-red); font-weight: 600; background: var(--accent-red-light); padding: 8px; border-radius: var(--radius-sm); margin: 0;"></p>
-
-
-<h4 style="margin-bottom: 4px; margin-top: 10px; font-size: 14px;">🗓️ 歷史全部缺席週次：</h4>
-
-<p id="absent-all-weeks" style="font-size: 13.5px; color: var(--text-main); background: #faf8f5; padding: 8px; border-radius: var(--radius-sm); margin: 0; border: 1px solid var(--border-color);"></p>
-
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3 id="absent-detail-name">學生缺席紀錄細節</h3>
+    <div style="margin: 10px 0;">
+      <h4 style="margin-bottom: 4px; font-size: 14px;">📍 指定統計區間缺席：</h4>
+      <p id="absent-range-weeks" style="font-size: 13.5px; color: var(--accent-red); font-weight: 600; background: var(--accent-red-light); padding: 8px; border-radius: var(--radius-sm); margin: 0;"></p>
+      
+      <h4 style="margin-bottom: 4px; margin-top: 10px; font-size: 14px;">🗓️ 歷史全部缺席週次：</h4>
+      <p id="absent-all-weeks" style="font-size: 13.5px; color: var(--text-main); background: #faf8f5; padding: 8px; border-radius: var(--radius-sm); margin: 0; border: 1px solid var(--border-color);"></p>
+    </div>
+    <div style="display:flex; justify-content: flex-end; margin-top: 12px;">
+      <button class="btn-gray" onclick="closeModal('absent-details-modal')">關閉</button>
+    </div>
+  </div>
 </div>
-
-<div style="display:flex; justify-content: flex-end; margin-top: 12px;">
-
-<button class="btn-gray" onclick="closeModal('absent-details-modal')">關閉</button>
-
-</div>
-
-</div>
-
-</div>
-
-
 
 <script>
-
-const TOTAL_SEATS = 36;
-
-let lastScoredStudentId = null;
-
-
-
-function generateDefaultWeeks() {
-
-let weeks = [];
-
-for (let i = 1; i <= 20; i++) weeks.push(`第 ${i} 週`);
-
-return weeks;
-
-}
-
-
-
-let db = {
-
-currentClass: "三年一班",
-
-currentWeek: "第 1 週",
-
-classes: {
-
-"三年一班": {
-
-weeks: generateDefaultWeeks(),
-
-students: [],
-
-groupScoresByWeek: {},
-
-logs: []
-
-}
-
-}
-
-};
-
-
-
-let activeStudentId = null;
-
-let draggedStudentId = null;
-
-
-
-function clearScoredStatus() { lastScoredStudentId = null; }
-
-
-
-function getTimestamp() {
-
-const now = new Date();
-
-const pad = n => n.toString().padStart(2, '0');
-
-return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-
-}
-
-
-
-function addLog(actionText) {
-
-const classData = db.classes[db.currentClass];
-
-if (classData) {
-
-if (!classData.logs) classData.logs = [];
-
-classData.logs.unshift({ timestamp: getTimestamp(), week: db.currentWeek, text: actionText });
-
-saveStorage();
-
-}
-
-}
-
-
-
-function init() {
-
-const saved = localStorage.getItem('smart_classroom_db');
-
-if (saved) {
-
-try {
-
-db = JSON.parse(saved);
-
-Object.keys(db.classes).forEach(cName => {
-
-if (!db.classes[cName].weeks || db.classes[cName].weeks.length < 20) {
-
-db.classes[cName].weeks = generateDefaultWeeks();
-
-}
-
-if (!db.classes[cName].groupScoresByWeek) {
-
-db.classes[cName].groupScoresByWeek = {};
-
-}
-
-if (!db.classes[cName].logs) {
-
-db.classes[cName].logs = [];
-
-}
-
-});
-
-} catch (e) { console.error("JSON Read Error:", e); }
-
-} else {
-
-saveStorage();
-
-}
-
-renderSelectors();
-
-renderAll();
-
-}
-
-
-
-function saveStorage() {
-
-localStorage.setItem('smart_classroom_db', JSON.stringify(db));
-
-if (typeof gapi !== 'undefined' && gapi.client && gapi.client.getToken() !== null) {
-
-uploadToDrive(true);
-
-}
-
-}
-
-
-
-function getCurrentClassObj() { return db.classes[db.currentClass]; }
-
-
-
-function renderSelectors() {
-
-const classSelect = document.getElementById('class-select');
-
-classSelect.innerHTML = '';
-
-Object.keys(db.classes).forEach(cls => {
-
-const opt = document.createElement('option');
-
-opt.value = cls; opt.innerText = cls;
-
-if (cls === db.currentClass) opt.selected = true;
-
-classSelect.appendChild(opt);
-
-});
-
-
-
-const weekSelect = document.getElementById('week-select');
-
-const startWeekSelect = document.getElementById('stats-start-week');
-
-const endWeekSelect = document.getElementById('stats-end-week');
-
-
-weekSelect.innerHTML = '';
-
-startWeekSelect.innerHTML = '';
-
-endWeekSelect.innerHTML = '';
-
-
-const classData = getCurrentClassObj();
-
-if (classData) {
-
-classData.weeks.forEach((wk, idx) => {
-
-const createOpt = () => {
-
-const opt = document.createElement('option');
-
-opt.value = wk; opt.innerText = wk;
-
-return opt;
-
-};
-
-const opt1 = createOpt(); if (wk === db.currentWeek) opt1.selected = true;
-
-weekSelect.appendChild(opt1);
-
-
-
-const opt2 = createOpt(); if (idx === 0) opt2.selected = true;
-
-startWeekSelect.appendChild(opt2);
-
-
-
-const opt3 = createOpt(); if (wk === db.currentWeek) opt3.selected = true;
-
-endWeekSelect.appendChild(opt3);
-
-});
-
-}
-
-}
-
-
-
-function renderAll() {
-
-renderGroupHeaders();
-
-renderGrid();
-
-renderUnassignedPool();
-
-renderStatsTable();
-
-}
-
-
-
-function getGroupScore(groupNum, week = null) {
-
-const classData = getCurrentClassObj();
-
-if (week) {
-
-return (classData.groupScoresByWeek[week] && classData.groupScoresByWeek[week][groupNum]) || 0;
-
-}
-
-let total = 0;
-
-Object.values(classData.groupScoresByWeek).forEach(wObj => {
-
-total += (wObj[groupNum] || 0);
-
-});
-
-return total;
-
-}
-
-
-
-function getStudentPersonalScore(student, week = null) {
-
-if (week) {
-
-return (student.scoresByWeek && student.scoresByWeek[week] !== undefined) ? student.scoresByWeek[week] : 0;
-
-}
-
-let total = 0;
-
-if (student.scoresByWeek) {
-
-Object.values(student.scoresByWeek).forEach(sc => total += sc);
-
-}
-
-return total;
-
-}
-
-
-
-function renderGroupHeaders() {
-
-const container = document.getElementById('group-headers');
-
-container.innerHTML = '';
-
-
-for (let g = 1; g <= 6; g++) {
-
-const score = getGroupScore(g, db.currentWeek);
-
-const card = document.createElement('div');
-
-card.className = 'group-card';
-
-card.innerHTML = `
-
-<h4>第 ${g} 組</h4>
-
-<div class="group-score-row">
-
-<span class="group-score-badge">${score}分</span>
-
-<div class="group-btn-box">
-
-<button class="btn-green" onclick="adjustGroupScore(${g}, 1)">+1</button>
-
-<button class="btn-red" onclick="adjustGroupScore(${g}, -1)">-1</button>
-
-</div>
-
-</div>
-
-`;
-
-container.appendChild(card);
-
-}
-
-}
-
-
-
-function renderGrid() {
-
-const grid = document.getElementById('grid-container');
-
-grid.innerHTML = '';
-
-const classData = getCurrentClassObj();
-
-
-
-for (let i = 0; i < TOTAL_SEATS; i++) {
-
-const slot = document.createElement('div');
-
-slot.className = 'seat-slot';
-
-slot.ondragover = allowDrop;
-
-slot.ondragleave = handleDragLeave;
-
-slot.ondrop = (e) => dropToSeat(e, i);
-
-
-
-const student = classData.students.find(s => s.seatIndex === i);
-
-if (student) {
-
-slot.appendChild(createStudentCard(student, true));
-
-}
-
-
-
-grid.appendChild(slot);
-
-}
-
-}
-
-
-
-function renderUnassignedPool() {
-
-const pool = document.getElementById('unassigned-list');
-
-pool.innerHTML = '';
-
-const classData = getCurrentClassObj();
-
-const unassigned = classData.students.filter(s => s.seatIndex === null || s.seatIndex === undefined);
-
-
-document.getElementById('unassigned-count').innerText = unassigned.length;
-
-unassigned.forEach(student => {
-
-pool.appendChild(createStudentCard(student, false));
-
-});
-
-}
-
-
-
-function createStudentCard(student, showScores = true) {
-
-const card = document.createElement('div');
-
-const isAbsent = student.attendance && student.attendance[db.currentWeek] === '缺席';
-
-const isScored = lastScoredStudentId === student.id;
-
-const weekScore = getStudentPersonalScore(student, db.currentWeek);
-
-
-
-card.className = `student-card ${isAbsent ? 'absent' : ''} ${isScored ? 'scored' : ''}`;
-
-card.draggable = true;
-
-
-
-card.ondragstart = () => { draggedStudentId = student.id; };
-
-card.onclick = (e) => { e.stopPropagation(); openStudentModal(student.id); };
-
-
-
-let scoresHTML = '';
-
-if (showScores) {
-
-scoresHTML = `
-
-<div class="card-scores">
-
-${isAbsent ? '<span class="badge-absent">缺</span>' : ''}
-
-<span class="badge-personal">${weekScore}分</span>
-
-</div>
-
-`;
-
-}
-
-
-
-card.innerHTML = `
-
-<div class="card-name">${student.name}</div>
-
-${scoresHTML}
-
-`;
-
-return card;
-
-}
-
-
-
-function renderStatsTable() {
-
-const tbody = document.getElementById('stats-tbody');
-
-const cardsGrid = document.getElementById('stats-cards-grid');
-
-tbody.innerHTML = '';
-
-cardsGrid.innerHTML = '';
-
-
-
-const classData = getCurrentClassObj();
-
-
-const startWk = document.getElementById('stats-start-week').value || db.currentWeek;
-
-const endWk = document.getElementById('stats-end-week').value || db.currentWeek;
-
-
-const startIdx = classData.weeks.indexOf(startWk);
-
-const endIdx = classData.weeks.indexOf(endWk);
-
-const minIdx = Math.min(startIdx, endIdx);
-
-const maxIdx = Math.max(startIdx, endIdx);
-
-
-
-const selectedWeeks = classData.weeks.slice(minIdx, maxIdx + 1);
-
-
-
-classData.students.forEach(s => {
-
-const groupNum = s.seatIndex !== null && s.seatIndex !== undefined ? (s.seatIndex % 6) + 1 : "-";
-
-
-let rangePersonalScore = 0;
-
-if (s.scoresByWeek) {
-
-selectedWeeks.forEach(wk => {
-
-rangePersonalScore += (s.scoresByWeek[wk] || 0);
-
-});
-
-}
-
-
-
-let rangeGroupScore = 0;
-
-if (groupNum !== "-") {
-
-selectedWeeks.forEach(wk => {
-
-if (classData.groupScoresByWeek[wk]) {
-
-rangeGroupScore += (classData.groupScoresByWeek[wk][groupNum] || 0);
-
-}
-
-});
-
-}
-
-
-
-let rangeAbsentWeeks = [];
-
-let totalAbsentWeeks = [];
-
-
-
-if (s.attendance) {
-
-Object.entries(s.attendance).forEach(([wk, status]) => {
-
-if (status === '缺席') {
-
-totalAbsentWeeks.push(wk);
-
-if (selectedWeeks.includes(wk)) {
-
-rangeAbsentWeeks.push(wk);
-
-}
-
-}
-
-});
-
-}
-
-
-
-const tr = document.createElement('tr');
-
-tr.innerHTML = `
-
-<td><b>${s.name}</b></td>
-
-<td>${groupNum !== '-' ? '第 ' + groupNum + ' 組' : '-'}</td>
-
-<td style="color: var(--accent-blue); font-weight: 700;">${rangePersonalScore}</td>
-
-<td style="color: var(--accent-green); font-weight: 700;">${groupNum !== '-' ? rangeGroupScore : '-'}</td>
-
-<td class="clickable-absent" style="color: ${rangeAbsentWeeks.length > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};" onclick="showAbsentDetails('${s.id}', '${startWk}', '${endWk}')">
-
-${rangeAbsentWeeks.length} 次
-
-</td>
-
-<td class="clickable-absent" style="color: ${totalAbsentWeeks.length > 0 ? 'var(--accent-red
+  const TOTAL_SEATS = 36;
+  let lastScoredStudentId = null;
+
+  function generateDefaultWeeks() {
+    let weeks = [];
+    for (let i = 1; i <= 20; i++) weeks.push(`第 ${i} 週`);
+    return weeks;
+  }
+
+  let db = {
+    currentClass: "三年一班",
+    currentWeek: "第 1 週",
+    classes: {
+      "三年一班": {
+        weeks: generateDefaultWeeks(),
+        students: [],
+        groupScoresByWeek: {},
+        logs: []
+      }
+    }
+  };
+
+  let activeStudentId = null;
+  let draggedStudentId = null;
+
+  function clearScoredStatus() { lastScoredStudentId = null; }
+
+  function getTimestamp() {
+    const now = new Date();
+    const pad = n => n.toString().padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  }
+
+  function addLog(actionText) {
+    const classData = db.classes[db.currentClass];
+    if (classData) {
+      if (!classData.logs) classData.logs = [];
+      classData.logs.unshift({ timestamp: getTimestamp(), week: db.currentWeek, text: actionText });
+      saveStorage();
+    }
+  }
+
+  function init() {
+    const saved = localStorage.getItem('smart_classroom_db');
+    if (saved) {
+      try {
+        db = JSON.parse(saved);
+        Object.keys(db.classes).forEach(cName => {
+          if (!db.classes[cName].weeks || db.classes[cName].weeks.length < 20) {
+            db.classes[cName].weeks = generateDefaultWeeks();
+          }
+          if (!db.classes[cName].groupScoresByWeek) {
+            db.classes[cName].groupScoresByWeek = {};
+          }
+          if (!db.classes[cName].logs) {
+            db.classes[cName].logs = [];
+          }
+        });
+      } catch (e) { console.error("JSON Read Error:", e); }
+    } else {
+      saveStorage();
+    }
+    renderSelectors();
+    renderAll();
+  }
+
+  function saveStorage() {
+    localStorage.setItem('smart_classroom_db', JSON.stringify(db));
+    if (typeof gapi !== 'undefined' && gapi.client && gapi.client.getToken() !== null) {
+      uploadToDrive(true);
+    }
+  }
+
+  function getCurrentClassObj() { return db.classes[db.currentClass]; }
+
+  function renderSelectors() {
+    const classSelect = document.getElementById('class-select');
+    classSelect.innerHTML = '';
+    Object.keys(db.classes).forEach(cls => {
+      const opt = document.createElement('option');
+      opt.value = cls; opt.innerText = cls;
+      if (cls === db.currentClass) opt.selected = true;
+      classSelect.appendChild(opt);
+    });
+
+    const weekSelect = document.getElementById('week-select');
+    const startWeekSelect = document.getElementById('stats-start-week');
+    const endWeekSelect = document.getElementById('stats-end-week');
+    
+    weekSelect.innerHTML = '';
+    startWeekSelect.innerHTML = '';
+    endWeekSelect.innerHTML = '';
+    
+    const classData = getCurrentClassObj();
+    if (classData) {
+      classData.weeks.forEach((wk, idx) => {
+        const createOpt = () => {
+          const opt = document.createElement('option');
+          opt.value = wk; opt.innerText = wk;
+          return opt;
+        };
+        const opt1 = createOpt(); if (wk === db.currentWeek) opt1.selected = true;
+        weekSelect.appendChild(opt1);
+
+        const opt2 = createOpt(); if (idx === 0) opt2.selected = true;
+        startWeekSelect.appendChild(opt2);
+
+        const opt3 = createOpt(); if (wk === db.currentWeek) opt3.selected = true;
+        endWeekSelect.appendChild(opt3);
+      });
+    }
+  }
+
+  function renderAll() {
+    renderGroupHeaders();
+    renderGrid();
+    renderUnassignedPool();
+    renderStatsTable();
+  }
+
+  function getGroupScore(groupNum, week = null) {
+    const classData = getCurrentClassObj();
+    if (week) {
+      return (classData.groupScoresByWeek[week] && classData.groupScoresByWeek[week][groupNum]) || 0;
+    }
+    let total = 0;
+    Object.values(classData.groupScoresByWeek).forEach(wObj => {
+      total += (wObj[groupNum] || 0);
+    });
+    return total;
+  }
+
+  function getStudentPersonalScore(student, week = null) {
+    if (week) {
+      return (student.scoresByWeek && student.scoresByWeek[week] !== undefined) ? student.scoresByWeek[week] : 0;
+    }
+    let total = 0;
+    if (student.scoresByWeek) {
+      Object.values(student.scoresByWeek).forEach(sc => total += sc);
+    }
+    return total;
+  }
+
+  function renderGroupHeaders() {
+    const container = document.getElementById('group-headers');
+    container.innerHTML = '';
+    
+    for (let g = 1; g <= 6; g++) {
+      const score = getGroupScore(g, db.currentWeek);
+      const card = document.createElement('div');
+      card.className = 'group-card';
+      card.innerHTML = `
+        <h4>第 ${g} 組</h4>
+        <div class="group-score-row">
+          <span class="group-score-badge">${score}分</span>
+          <div class="group-btn-box">
+            <button class="btn-green" onclick="adjustGroupScore(${g}, 1)">+1</button>
+            <button class="btn-red" onclick="adjustGroupScore(${g}, -1)">-1</button>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    }
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('grid-container');
+    grid.innerHTML = '';
+    const classData = getCurrentClassObj();
+
+    for (let i = 0; i < TOTAL_SEATS; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'seat-slot';
+      slot.ondragover = allowDrop;
+      slot.ondragleave = handleDragLeave;
+      slot.ondrop = (e) => dropToSeat(e, i);
+
+      const student = classData.students.find(s => s.seatIndex === i);
+      if (student) {
+        slot.appendChild(createStudentCard(student, true));
+      }
+
+      grid.appendChild(slot);
+    }
+  }
+
+  function renderUnassignedPool() {
+    const pool = document.getElementById('unassigned-list');
+    pool.innerHTML = '';
+    const classData = getCurrentClassObj();
+    const unassigned = classData.students.filter(s => s.seatIndex === null || s.seatIndex === undefined);
+    
+    document.getElementById('unassigned-count').innerText = unassigned.length;
+    unassigned.forEach(student => {
+      pool.appendChild(createStudentCard(student, false));
+    });
+  }
+
+  function createStudentCard(student, showScores = true) {
+    const card = document.createElement('div');
+    const isAbsent = student.attendance && student.attendance[db.currentWeek] === '缺席';
+    const isScored = lastScoredStudentId === student.id;
+    const weekScore = getStudentPersonalScore(student, db.currentWeek);
+
+    card.className = `student-card ${isAbsent ? 'absent' : ''} ${isScored ? 'scored' : ''}`;
+    card.draggable = true;
+
+    card.ondragstart = () => { draggedStudentId = student.id; };
+    card.onclick = (e) => { e.stopPropagation(); openStudentModal(student.id); };
+
+    let scoresHTML = '';
+    if (showScores) {
+      scoresHTML = `
+        <div class="card-scores">
+          ${isAbsent ? '<span class="badge-absent">缺</span>' : ''}
+          <span class="badge-personal">${weekScore}分</span>
+        </div>
+      `;
+    }
+
+    card.innerHTML = `
+      <div class="card-name">${student.name}</div>
+      ${scoresHTML}
+    `;
+    return card;
+  }
+
+  function renderStatsTable() {
+    const tbody = document.getElementById('stats-tbody');
+    const cardsGrid = document.getElementById('stats-cards-grid');
+    tbody.innerHTML = '';
+    cardsGrid.innerHTML = '';
+
+    const classData = getCurrentClassObj();
+    
+    const startWk = document.getElementById('stats-start-week').value || db.currentWeek;
+    const endWk = document.getElementById('stats-end-week').value || db.currentWeek;
+    
+    const startIdx = classData.weeks.indexOf(startWk);
+    const endIdx = classData.weeks.indexOf(endWk);
+    const minIdx = Math.min(startIdx, endIdx);
+    const maxIdx = Math.max(startIdx, endIdx);
+
+    const selectedWeeks = classData.weeks.slice(minIdx, maxIdx + 1);
+
+    classData.students.forEach(s => {
+      const groupNum = s.seatIndex !== null && s.seatIndex !== undefined ? (s.seatIndex % 6) + 1 : "-";
+      
+      let rangePersonalScore = 0;
+      if (s.scoresByWeek) {
+        selectedWeeks.forEach(wk => {
+          rangePersonalScore += (s.scoresByWeek[wk] || 0);
+        });
+      }
+
+      let rangeGroupScore = 0;
+      if (groupNum !== "-") {
+        selectedWeeks.forEach(wk => {
+          if (classData.groupScoresByWeek[wk]) {
+            rangeGroupScore += (classData.groupScoresByWeek[wk][groupNum] || 0);
+          }
+        });
+      }
+
+      let rangeAbsentWeeks = [];
+      let totalAbsentWeeks = [];
+
+      if (s.attendance) {
+        Object.entries(s.attendance).forEach(([wk, status]) => {
+          if (status === '缺席') {
+            totalAbsentWeeks.push(wk);
+            if (selectedWeeks.includes(wk)) {
+              rangeAbsentWeeks.push(wk);
+            }
+          }
+        });
+      }
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><b>${s.name}</b></td>
+        <td>${groupNum !== '-' ? '第 ' + groupNum + ' 組' : '-'}</td>
+        <td style="color: var(--accent-blue); font-weight: 700;">${rangePersonalScore}</td>
+        <td style="color: var(--accent-green); font-weight: 700;">${groupNum !== '-' ? rangeGroupScore : '-'}</td>
+        <td class="clickable-absent" style="color: ${rangeAbsentWeeks.length > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};" onclick="showAbsentDetails('${s.id}', '${startWk}', '${endWk}')">
+          ${rangeAbsentWeeks.length} 次
+        </td>
+        <td class="clickable-absent" style="color: ${totalAbsentWeeks.length > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};" onclick="showAbsentDetails('${s.id}', '${startWk}', '${endWk}')">
+          ${totalAbsentWeeks.length} 次
+        </td>
+      `;
+      tbody.appendChild(tr);
+
+      const card = document.createElement('div');
+      card.className = 'stat-card-item';
+      card.innerHTML = `
+        <div class="stat-card-header">
+          <span class="stat-card-name">${s.name}</span>
+          <span class="stat-card-group">${groupNum !== '-' ? '第 ' + groupNum + ' 組' : '未分配'}</span>
+        </div>
+        <div class="stat-card-row">
+          <span>個人積分:</span>
+          <b style="color: var(--accent-blue);">${rangePersonalScore} 分</b>
+        </div>
+        <div class="stat-card-row">
+          <span>小組積分:</span>
+          <b style="color: var(--accent-green);">${groupNum !== '-' ? rangeGroupScore + ' 分' : '-'}</b>
+        </div>
+        <div class="stat-card-row">
+          <span>區間/總缺席:</span>
+          <span class="clickable-absent" style="color: ${rangeAbsentWeeks.length > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};" onclick="showAbsentDetails('${s.id}', '${startWk}', '${endWk}')">
+            ${rangeAbsentWeeks.length} / ${totalAbsentWeeks.length} 次
+          </span>
+        </div>
+      `;
+      cardsGrid.appendChild(card);
+    });
+  }
+
+  function showAbsentDetails(studentId, startWk, endWk) {
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === studentId);
+    if (!student) return;
+
+    document.getElementById('absent-detail-name').innerText = `📌 ${student.name} - 缺席細節`;
+
+    const startIdx = classData.weeks.indexOf(startWk);
+    const endIdx = classData.weeks.indexOf(endWk);
+    const minIdx = Math.min(startIdx, endIdx);
+    const maxIdx = Math.max(startIdx, endIdx);
+    const selectedWeeks = classData.weeks.slice(minIdx, maxIdx + 1);
+
+    let rangeAbsentWeeks = [];
+    let allAbsentWeeks = [];
+
+    if (student.attendance) {
+      Object.entries(student.attendance).forEach(([wk, status]) => {
+        if (status === '缺席') {
+          allAbsentWeeks.push(wk);
+          if (selectedWeeks.includes(wk)) {
+            rangeAbsentWeeks.push(wk);
+          }
+        }
+      });
+    }
+
+    document.getElementById('absent-range-weeks').innerText = 
+      rangeAbsentWeeks.length > 0 ? rangeAbsentWeeks.join('、 ') : '（區間內無缺席紀錄）';
+
+    document.getElementById('absent-all-weeks').innerText = 
+      allAbsentWeeks.length > 0 ? allAbsentWeeks.join('、 ') : '（全學期無缺席紀錄）';
+
+    document.getElementById('absent-details-modal').style.display = 'flex';
+  }
+
+  function allowDrop(e) {
+    e.preventDefault();
+    if (e.currentTarget.classList.contains('seat-slot')) {
+      e.currentTarget.classList.add('drag-over');
+    }
+  }
+
+  function handleDragLeave(e) {
+    if (e.currentTarget.classList.contains('seat-slot')) {
+      e.currentTarget.classList.remove('drag-over');
+    }
+  }
+
+  function dropToSeat(e, targetSeatIndex) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    clearScoredStatus();
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === draggedStudentId);
+    
+    if (student) {
+      const existingStudent = classData.students.find(s => s.seatIndex === targetSeatIndex);
+      if (existingStudent) existingStudent.seatIndex = student.seatIndex;
+      
+      student.seatIndex = targetSeatIndex;
+      addLog(`移動學生 [${student.name}] 至 第 ${(targetSeatIndex % 6) + 1} 組`);
+      saveStorage();
+      renderAll();
+    }
+  }
+
+  function dropToPool(e) {
+    e.preventDefault();
+    clearScoredStatus();
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === draggedStudentId);
+    if (student && student.seatIndex !== null) {
+      addLog(`將學生 [${student.name}] 移回待分配區`);
+      student.seatIndex = null;
+      saveStorage();
+      renderAll();
+    }
+  }
+
+  function adjustGroupScore(groupNum, delta) {
+    clearScoredStatus();
+    const classData = getCurrentClassObj();
+    if (!classData.groupScoresByWeek[db.currentWeek]) {
+      classData.groupScoresByWeek[db.currentWeek] = {};
+    }
+    const currentScore = classData.groupScoresByWeek[db.currentWeek][groupNum] || 0;
+    const newScore = currentScore + delta;
+    classData.groupScoresByWeek[db.currentWeek][groupNum] = newScore;
+
+    addLog(`第 ${groupNum} 組 ${delta > 0 ? '加' : '扣'} ${Math.abs(delta)} 分 (目前 ${newScore} 分)`);
+    saveStorage();
+    renderGroupHeaders();
+    renderStatsTable();
+  }
+
+  function openStudentModal(studentId) {
+    activeStudentId = studentId;
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === studentId);
+    if (!student) return;
+
+    document.getElementById('modal-student-name').innerText = student.name;
+    const groupNum = student.seatIndex !== null && student.seatIndex !== undefined ? (student.seatIndex % 6) + 1 : "未分配";
+    document.getElementById('modal-student-group').innerText = groupNum !== "未分配" ? `第 ${groupNum} 組` : "未分配組別";
+    
+    const weekScore = getStudentPersonalScore(student, db.currentWeek);
+    document.getElementById('modal-student-score').innerText = weekScore;
+
+    const isAbsent = student.attendance && student.attendance[db.currentWeek] === '缺席';
+    const absentBtn = document.getElementById('modal-absent-btn');
+    if (isAbsent) {
+      absentBtn.innerText = "取消缺席";
+      absentBtn.className = "btn-red";
+    } else {
+      absentBtn.innerText = "標記缺席";
+      absentBtn.className = "btn-blue";
+    }
+
+    document.getElementById('student-modal').style.display = 'flex';
+  }
+
+  /* 修改：完成加扣分動作後自動關閉彈出視窗 (closeModal('student-modal')) */
+  function adjustPersonalScore(delta, reason = '') {
+    if (!activeStudentId) return;
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === activeStudentId);
+    if (!student) return;
+
+    if (!student.scoresByWeek) student.scoresByWeek = {};
+    const curScore = Number(student.scoresByWeek[db.currentWeek] || 0);
+    const numDelta = Number(delta);
+    
+    const newScore = curScore + numDelta;
+    student.scoresByWeek[db.currentWeek] = newScore;
+
+    lastScoredStudentId = student.id;
+    addLog(`[${student.name}] ${reason ? reason + ' ' : ''}${numDelta > 0 ? '+' : ''}${numDelta} 分 (本週 ${newScore} 分)`);
+    
+    saveStorage();
+    document.getElementById('modal-student-score').innerText = newScore;
+    renderAll();
+    closeModal('student-modal'); // 動作完成後自動離開視窗
+  }
+
+  function toggleAbsent() {
+    if (!activeStudentId) return;
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === activeStudentId);
+    if (!student) return;
+
+    if (!student.attendance) student.attendance = {};
+    const isAbsent = student.attendance[db.currentWeek] === '缺席';
+
+    if (isAbsent) {
+      delete student.attendance[db.currentWeek];
+      addLog(`[${student.name}] 取消 ${db.currentWeek} 缺席標記`);
+    } else {
+      student.attendance[db.currentWeek] = '缺席';
+      addLog(`[${student.name}] 標記 ${db.currentWeek} 缺席`);
+    }
+
+    saveStorage();
+    closeModal('student-modal');
+    renderAll();
+  }
+
+  function switchClass() {
+    clearScoredStatus();
+    db.currentClass = document.getElementById('class-select').value;
+    saveStorage();
+    renderSelectors();
+    renderAll();
+  }
+
+  function switchWeek() {
+    clearScoredStatus();
+    db.currentWeek = document.getElementById('week-select').value;
+    saveStorage();
+    renderAll();
+  }
+
+  function addClassPrompt() {
+    const name = prompt("請輸入新班級名稱：", "三年二班");
+    if (name && name.trim()) {
+      const trimmed = name.trim();
+      if (db.classes[trimmed]) {
+        alert("班級名稱已存在！");
+        return;
+      }
+      db.classes[trimmed] = {
+        weeks: generateDefaultWeeks(),
+        students: [],
+        groupScoresByWeek: {},
+        logs: []
+      };
+      db.currentClass = trimmed;
+      saveStorage();
+      renderSelectors();
+      renderAll();
+    }
+  }
+
+  function deleteClassPrompt() {
+    const keys = Object.keys(db.classes);
+    if (keys.length <= 1) {
+      alert("至少需保留一個班級！");
+      return;
+    }
+    if (confirm(`確定要刪除「${db.currentClass}」及其所有學生資料嗎？此動作無法復原！`)) {
+      delete db.classes[db.currentClass];
+      db.currentClass = Object.keys(db.classes)[0];
+      saveStorage();
+      renderSelectors();
+      renderAll();
+    }
+  }
+
+  function openImportModal() { document.getElementById('import-modal').style.display = 'flex'; }
+  function openLogModal() {
+    const logList = document.getElementById('log-list');
+    logList.innerHTML = '';
+    const classData = getCurrentClassObj();
+    if (classData && classData.logs) {
+      classData.logs.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'log-item';
+        li.innerHTML = `<span class="log-time">[${item.timestamp}] (${item.week})</span> ${item.text}`;
+        logList.appendChild(li);
+      });
+    }
+    document.getElementById('log-modal').style.display = 'flex';
+  }
+  function openExportModal() { document.getElementById('export-modal').style.display = 'flex'; }
+  function openClearModal() { document.getElementById('clear-modal').style.display = 'flex'; }
+  
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+  
+  /* 點擊半透明背景空白處即可關閉視窗 */
+  function closeModalOnOutsideClick(event, id) {
+    if (event.target.id === id) {
+      closeModal(id);
+    }
+  }
+
+  function processImport() {
+    const text = document.getElementById('import-text').value;
+    if (!text.trim()) return;
+    const names = text.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+    const classData = getCurrentClassObj();
+
+    names.forEach(name => {
+      classData.students.push({
+        id: 's_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        name: name,
+        seatIndex: null,
+        scoresByWeek: {},
+        attendance: {}
+      });
+    });
+
+    addLog(`匯入 ${names.length} 名學生`);
+    saveStorage();
+    document.getElementById('import-text').value = '';
+    closeModal('import-modal');
+    renderAll();
+  }
+
+  function processExport() {
+    const chkScores = document.getElementById('chk-scores').checked;
+    const chkRangeAbsent = document.getElementById('chk-range-absent').checked;
+    const chkTotalAbsent = document.getElementById('chk-total-absent').checked;
+    const chkLogs = document.getElementById('chk-logs').checked;
+
+    const classData = getCurrentClassObj();
+    const startWk = document.getElementById('stats-start-week').value || db.currentWeek;
+    const endWk = document.getElementById('stats-end-week').value || db.currentWeek;
+    
+    const startIdx = classData.weeks.indexOf(startWk);
+    const endIdx = classData.weeks.indexOf(endWk);
+    const minIdx = Math.min(startIdx, endIdx);
+    const maxIdx = Math.max(startIdx, endIdx);
+    const selectedWeeks = classData.weeks.slice(minIdx, maxIdx + 1);
+
+    let csvContent = "\uFEFF";
+    csvContent += `班級：,${db.currentClass},統計區間：,${startWk} 至 ${endWk}\n\n`;
+
+    let headers = ["姓名", "組別"];
+    if (chkScores) { headers.push("區間個人積分", "區間小組積分"); }
+    if (chkRangeAbsent) { headers.push("區間缺席次數", "區間缺席週次"); }
+    if (chkTotalAbsent) { headers.push("總缺席次數", "總缺席週次"); }
+
+    csvContent += headers.join(",") + "\n";
+
+    classData.students.forEach(s => {
+      const groupNum = s.seatIndex !== null && s.seatIndex !== undefined ? (s.seatIndex % 6) + 1 : "未分配";
+      let row = [`"${s.name}"`, `"${groupNum !== '未分配' ? '第 ' + groupNum + ' 組' : '未分配'}"`];
+
+      let rangePersonalScore = 0;
+      if (s.scoresByWeek) {
+        selectedWeeks.forEach(wk => rangePersonalScore += (s.scoresByWeek[wk] || 0));
+      }
+
+      let rangeGroupScore = 0;
+      if (groupNum !== "未分配") {
+        selectedWeeks.forEach(wk => {
+          if (classData.groupScoresByWeek[wk]) rangeGroupScore += (classData.groupScoresByWeek[wk][groupNum] || 0);
+        });
+      }
+
+      let rangeAbsentWeeks = [];
+      let totalAbsentWeeks = [];
+      if (s.attendance) {
+        Object.entries(s.attendance).forEach(([wk, status]) => {
+          if (status === '缺席') {
+            totalAbsentWeeks.push(wk);
+            if (selectedWeeks.includes(wk)) rangeAbsentWeeks.push(wk);
+          }
+        });
+      }
+
+      if (chkScores) { row.push(rangePersonalScore, groupNum !== "未分配" ? rangeGroupScore : 0); }
+      if (chkRangeAbsent) { row.push(rangeAbsentWeeks.length, `"${rangeAbsentWeeks.join('; ')}"`); }
+      if (chkTotalAbsent) { row.push(totalAbsentWeeks.length, `"${totalAbsentWeeks.join('; ')}"`); }
+
+      csvContent += row.join(",") + "\n";
+    });
+
+    if (chkLogs && classData.logs) {
+      csvContent += "\n\n操作歷程紀錄\n時間,週次,動作說明\n";
+      classData.logs.forEach(l => {
+        csvContent += `"${l.timestamp}","${l.week}","${l.text}"\n`;
+      });
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", `${db.currentClass}_統計成績表.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    closeModal('export-modal');
+  }
+
+  function executeClear(type) {
+    const classData = getCurrentClassObj();
+    if (type === 'reset_scores') {
+      classData.groupScoresByWeek = {};
+      classData.students.forEach(s => {
+        s.scoresByWeek = {};
+        s.attendance = {};
+      });
+      addLog("重設全班成績與出缺席紀錄");
+    } else if (type === 'clear_all') {
+      classData.students = [];
+      classData.groupScoresByWeek = {};
+      classData.logs = [];
+      addLog("清空全班學生與座位資料");
+    }
+    saveStorage();
+    closeModal('clear-modal');
+    renderAll();
+  }
+
+  // Google Cloud Drive API
+  CLIENT_ID = '525400214155-mgtf06889n43d654o67o70gg1rhtp3co.apps.googleusercontent.com';
+  API_KEY = 'AIzaSyBRxlZDQkDFYNAU3DSdejJW6BuyAMTY_nI';
+  
+  const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+  const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+  const BACKUP_FILE_NAME = 'taiwanese_classroom_db.json';
+
+  let tokenClient = null;
+
+  function updateCloudBadge(isLoggedIn) {
+    const badge = document.getElementById('cloud-status-badge');
+    if (isLoggedIn) {
+      badge.innerText = '☁️ 自動備份：開啟';
+      badge.classList.add('active');
+    } else {
+      badge.innerText = '☁️ 未登入同步';
+      badge.classList.remove('active');
+    }
+  }
+
+  window.gapiLoaded = function() {
+    if (typeof gapi !== 'undefined') {
+      gapi.load('client', async () => {
+        try {
+          await gapi.client.init({
+            apiKey: API_KEY,
+            discoveryDocs: [DISCOVERY_DOC],
+          });
+        } catch (e) { console.error("GAPI Init Error:", e); }
+      });
+    }
+  };
+
+  window.gisLoaded = function() {
+    if (typeof google !== 'undefined' && google.accounts) {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: '',
+      });
+    }
+  };
+
+  async function uploadToDrive(silent = false) {
+    try {
+      if (typeof gapi === 'undefined' || !gapi.client || !gapi.client.getToken()) {
+        updateCloudBadge(false);
+        return;
+      }
+      updateCloudBadge(true);
+      
+      const accessToken = gapi.client.getToken().access_token;
+      const fileContent = localStorage.getItem('smart_classroom_db') || (typeof db !== 'undefined' ? JSON.stringify(db) : '{}');
+      const file = new Blob([fileContent], { type: 'application/json' });
+      const metadata = { name: BACKUP_FILE_NAME, mimeType: 'application/json' };
+
+      const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILE_NAME}' and trashed=false`, {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      });
+      const searchData = await searchRes.json();
+
+      let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+      let method = 'POST';
+
+      if (searchData.files && searchData.files.length > 0) {
+        const fileId = searchData.files[0].id;
+        url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`;
+        method = 'PATCH';
+      }
+
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', file);
+
+      await fetch(url, {
+        method: method,
+        headers: { 'Authorization': 'Bearer ' + accessToken },
+        body: form,
+      });
+    } catch (err) {
+      console.error('Auto Backup Error:', err);
+    }
+  }
+
+  async function downloadFromDrive() {
+    try {
+      if (typeof gapi === 'undefined' || !gapi.client || !gapi.client.getToken()) return;
+      const accessToken = gapi.client.getToken().access_token;
+
+      const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILE_NAME}' and trashed=false`, {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      });
+      const searchData = await searchRes.json();
+
+      if (searchData.files && searchData.files.length > 0) {
+        const fileId = searchData.files[0].id;
+        const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+          headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        const cloudDataText = await fileRes.text();
+        if (cloudDataText && cloudDataText.trim().startsWith('{')) {
+          localStorage.setItem('smart_classroom_db', cloudDataText);
+          if (typeof init === 'function') init();
+          updateCloudBadge(true);
+          alert('📥 已成功連線 Google 雲端！系統此後將「自動實時備份」您的所有修改。');
+          return;
+        }
+      }
+      await uploadToDrive(true);
+      updateCloudBadge(true);
+    } catch (err) {
+      console.error('Download Error:', err);
+      alert('下載雲端資料失敗：' + err.message);
+    }
+  }
+
+  function handleAuthClick() {
+    if (!tokenClient) {
+      alert('Google 服務載入中，請稍後再試！');
+      return;
+    }
+
+    tokenClient.callback = async (resp) => {
+      if (resp.error !== undefined) throw (resp);
+      await downloadFromDrive();
+    };
+
+    if (gapi.client.getToken() === null) {
+      tokenClient.requestAccessToken({prompt: 'consent'});
+    } else {
+      tokenClient.requestAccessToken({prompt: ''});
+    }
+  }
+
+  window.onload = function() {
+    init();
+  };
+</script>
+</body>
+</html>
