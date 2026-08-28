@@ -62,23 +62,23 @@
       .main-layout { display: grid; grid-template-columns: 240px 1fr; }
     }
     
-    /* 待分配學生庫 */
+    /* 待分配學生庫：改用強大網格排版，均勻兩兩並排 */
     .unassigned-pool {
       background: white; border-radius: 10px; padding: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: 100%;
     }
     .pool-list {
-      display: flex; flex-wrap: wrap; gap: 6px; min-height: 50px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 6px; min-height: 50px;
       background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 6px;
-      width: 100%; justify-content: flex-start; align-content: flex-start;
+      width: 100%; align-content: flex-start;
     }
     .pool-list .student-card { 
-      width: auto !important; 
-      min-width: 80px; 
+      width: 100% !important; 
       max-width: none; 
       height: 48px; 
-      padding: 4px 8px; 
-      flex-grow: 1; 
+      padding: 4px 6px; 
     }
 
     /* 座位區 */
@@ -330,7 +330,7 @@
   </div>
 </div>
 
-<!-- Modal 2: 個人學生操作 -->
+<!-- Modal 2: 個人學生操作（已移除底部關閉視窗按鈕） -->
 <div class="modal" id="student-modal" onclick="closeModalOnOutsideClick(event, 'student-modal')">
   <div class="modal-content" onclick="event.stopPropagation()">
     <div class="student-header-box">
@@ -365,13 +365,11 @@
       </div>
     </div>
     
-    <div style="margin-top: 4px; border-top: 1px dashed #cbd5e1; padding-top: 4px; display: flex; gap: 6px; align-items: center;">
+    <div style="margin-top: 6px; border-top: 1px dashed #cbd5e1; padding-top: 6px; display: flex; gap: 6px; align-items: center;">
       <button class="btn-green" style="flex: 1; padding: 6px; font-size: 14px;" onclick="adjustPersonalScore(1, '手動加分')">+1 分</button>
       <button class="btn-red" style="flex: 1; padding: 6px; font-size: 14px;" onclick="adjustPersonalScore(-1, '手動扣分')">-1 分</button>
       <button class="btn-blue" id="modal-absent-btn" style="flex: 1.5; padding: 6px; font-size: 14px;" onclick="toggleAbsent()">標記缺席</button>
     </div>
-
-    <button class="btn-gray" style="width: 100%; margin-top: 6px; padding: 6px; font-size: 14px;" onclick="closeModal('student-modal')">關閉視窗</button>
   </div>
 </div>
 
@@ -901,7 +899,7 @@
     saveStorage();
     document.getElementById('modal-student-score').innerText = newScore;
     renderAll();
-    closeModal('student-modal'); // 動作後自動關閉視窗
+    closeModal('student-modal');
   }
 
   function toggleAbsent() {
@@ -922,7 +920,7 @@
     }
 
     saveStorage();
-    closeModal('student-modal'); // 動作後自動關閉視窗
+    closeModal('student-modal');
     renderAll();
   }
 
