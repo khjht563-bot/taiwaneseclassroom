@@ -1115,19 +1115,17 @@
     closeModal('export-modal');
   }
 
-// ====== Google API 驗證設定 (更新為完整版) ======
+// ====== Google API 驗證與雲端同步 (完整修復版) ======
   const CLIENT_ID = '525400214155-mgtf06889n43d654o67o70gg1rhtp3co.apps.googleusercontent.com';
   const API_KEY = 'AIzaSyBRxlZDQkDFYNAU3DSdejJW6BuyAMTY_nI';
   
-  // Google Drive API 所需設定
   const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
-  const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // 只存取此應用程式建立的檔案
+  const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
   let tokenClient;
   let gapiInited = false;
   let gsisInited = false;
 
-  // 1. 載入 Google API 客戶端
   function gapiLoaded() {
     gapi.load('client', intializeGapiClient);
   }
@@ -1138,65 +1136,91 @@
       discoveryDocs: [DISCOVERY_DOC],
     });
     gapiInited = true;
-    checkBeforeStart();
   }
 
-  // 2. 載入 Google 身分認證 SDK
   function gisLoaded() {
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       scope: SCOPES,
-      callback: '', // 在收到 token 後定義
+      callback: '',
     });
     gsisInited = true;
-    checkBeforeStart();
   }
 
-  // 3. 確保兩者都載入完成
-  function checkBeforeStart() {
-    if (gapiInited && gsisInited) {
-      console.log('Google API 載入完成，可以登入！');
+  // 🎯 1. 將本地 db 資料備份至 Google 雲端
+  async function uploadToDrive() {
+    try {
+      const localData = JSON.stringify(db);
+      const file = new Blob([localData], { type: 'application/json' });
+      const metadata = {
+        name: 'taiwanese_classroom_backup.json',
+        mimeType: 'application/json',
+      };
+
+      const accessToken = gapi.client.getToken().access_token;
+
+      // 檢查是否已有備份檔，有的話直接更新
+      const searchRes = await fetch("https://www.googleapis.com/drive/v3/files?q=name='taiwanese_classroom_backup.json' and trashed=false", {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      });
+      const searchData = await searchRes.json();
+
+      let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+      let method = 'POST';
+
+      if (searchData.files && searchData.files.length > 0) {
+        const fileId = searchData.files[0].id;
+        url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`;
+        method = 'PATCH';
+      }
+
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', file);
+
+      const res = await fetch(url, {
+        method: method,
+        headers: { 'Authorization': 'Bearer ' + accessToken },
+        body: form,
+      });
+
+      if (res.ok) {
+        alert('☁️ 資料已成功同步備份至 Google 雲端！');
+      } else {
+        alert('⚠️ 雲端備份失敗，請稍後再試。');
+      }
+    } catch (err) {
+      console.error('Upload Error:', err);
+      alert('備份出錯：' + err.message);
     }
   }
 
-  // 🎯 按鈕點擊觸發的函式
+  // 🎯 2. 按鈕點擊觸發登入與同步
   function handleAuthClick() {
     if (!tokenClient) {
-      alert('Google 服務還在載入中，請稍微再試一次！(如果一直不行，請檢查步驟二)');
+      alert('Google 服務載入中，請稍後再試！');
       return;
     }
 
-    // 定義登入成功後的動作（將 Token 存入系統）
     tokenClient.callback = async (resp) => {
       if (resp.error !== undefined) {
         throw (resp);
       }
-      console.log('Google 登入成功！');
-      // 這裡通常會觸發原本系統的 init() 或同步資料動作
-      if (typeof init === 'function') init(); 
-      alert('🔑 Google 雲端登入成功！');
+      // 授權成功後，自動將系統資料同步至雲端
+      await uploadToDrive();
     };
 
-    // 發起登入請求
     if (gapi.client.getToken() === null) {
-      // 尚未有 Token，重新請求（會跳出 consent 視窗）
       tokenClient.requestAccessToken({prompt: 'consent'});
     } else {
-      // 已有 Token，直接請求（可能不跳視窗）
       tokenClient.requestAccessToken({prompt: ''});
     }
   }
-  // ==========================================
-
-  // 初始化啟動 (確保 init 函式在上面有定義)
-  window.onload = function() {
-    if (typeof init === 'function') init();
-    // 雖然 SDK 會自動載入，但這裡確保 window onload 時能觸發
-  };
-</script>
 
   // 初始化啟動
-  window.onload = init;
+  window.onload = function() {
+    if (typeof init === 'function') init();
+  };
 </script>
 </body>
 </html>
