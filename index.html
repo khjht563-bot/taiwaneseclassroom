@@ -1113,8 +1113,85 @@
     closeModal('export-modal');
   }
 
-const CLIENT_ID = '525400214155-mgtf06889n43d654o67o70gg1rhtp3co.apps.googleusercontent.com';
+// ====== Google API 驗證設定 (更新為完整版) ======
+  const CLIENT_ID = '525400214155-mgtf06889n43d654o67o70gg1rhtp3co.apps.googleusercontent.com';
   const API_KEY = 'AIzaSyBRxlZDQkDFYNAU3DSdejJW6BuyAMTY_nI';
+  
+  // Google Drive API 所需設定
+  const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+  const SCOPES = 'https://www.googleapis.com/auth/drive.file'; // 只存取此應用程式建立的檔案
+
+  let tokenClient;
+  let gapiInited = false;
+  let gsisInited = false;
+
+  // 1. 載入 Google API 客戶端
+  function gapiLoaded() {
+    gapi.load('client', intializeGapiClient);
+  }
+
+  async function intializeGapiClient() {
+    await gapi.client.init({
+      apiKey: API_KEY,
+      discoveryDocs: [DISCOVERY_DOC],
+    });
+    gapiInited = true;
+    checkBeforeStart();
+  }
+
+  // 2. 載入 Google 身分認證 SDK
+  function gisLoaded() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: '', // 在收到 token 後定義
+    });
+    gsisInited = true;
+    checkBeforeStart();
+  }
+
+  // 3. 確保兩者都載入完成
+  function checkBeforeStart() {
+    if (gapiInited && gsisInited) {
+      console.log('Google API 載入完成，可以登入！');
+    }
+  }
+
+  // 🎯 按鈕點擊觸發的函式
+  function handleAuthClick() {
+    if (!tokenClient) {
+      alert('Google 服務還在載入中，請稍微再試一次！(如果一直不行，請檢查步驟二)');
+      return;
+    }
+
+    // 定義登入成功後的動作（將 Token 存入系統）
+    tokenClient.callback = async (resp) => {
+      if (resp.error !== undefined) {
+        throw (resp);
+      }
+      console.log('Google 登入成功！');
+      // 這裡通常會觸發原本系統的 init() 或同步資料動作
+      if (typeof init === 'function') init(); 
+      alert('🔑 Google 雲端登入成功！');
+    };
+
+    // 發起登入請求
+    if (gapi.client.getToken() === null) {
+      // 尚未有 Token，重新請求（會跳出 consent 視窗）
+      tokenClient.requestAccessToken({prompt: 'consent'});
+    } else {
+      // 已有 Token，直接請求（可能不跳視窗）
+      tokenClient.requestAccessToken({prompt: ''});
+    }
+  }
+  // ==========================================
+
+  // 初始化啟動 (確保 init 函式在上面有定義)
+  window.onload = function() {
+    if (typeof init === 'function') init();
+    // 雖然 SDK 會自動載入，但這裡確保 window onload 時能觸發
+  };
+</script>
 
   // 初始化啟動
   window.onload = init;
