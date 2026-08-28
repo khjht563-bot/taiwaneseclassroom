@@ -100,14 +100,14 @@
       .main-layout { display: grid; grid-template-columns: 240px 1fr; }
     }
     
-    /* 待分配學生庫：改為強制的 2 欄網格 (兩兩並列) */
+    /* 待分配學生庫：強制的 2 欄網格 (兩兩並列) */
     .unassigned-pool {
       background: var(--card-bg); border-radius: var(--radius-md); padding: 12px;
       box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); width: 100%;
     }
     .pool-list {
       display: grid !important; 
-      grid-template-columns: repeat(2, 1fr) !important; /* 兩兩並列關鍵 */
+      grid-template-columns: repeat(2, 1fr) !important; /* 兩兩並列 */
       gap: 6px; 
       min-height: 50px;
       background: #faf8f5; border: 1.5px dashed var(--border-color); border-radius: var(--radius-sm); padding: 6px;
@@ -118,7 +118,8 @@
     .pool-list .student-card { 
       width: 100% !important; 
       height: 40px !important; 
-      padding: 3px 6px !important;
+      padding: 3px 8px !important;
+      justify-content: center !important; /* 文字置中更美觀 */
     }
 
     /* 座位區 */
@@ -165,6 +166,8 @@
       font-weight: 600; font-size: 13.5px; color: var(--text-main); 
       line-height: 1.1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; text-align: left;
     }
+    .pool-list .card-name { text-align: center; } /* 待分配區文字水平置中 */
+
     .card-scores { 
       display: flex; align-items: center; justify-content: flex-end; gap: 2px; flex-shrink: 0;
     }
@@ -669,7 +672,7 @@
 
       const student = classData.students.find(s => s.seatIndex === i);
       if (student) {
-        slot.appendChild(createStudentCard(student));
+        slot.appendChild(createStudentCard(student, true)); /* showScores = true */
       }
 
       grid.appendChild(slot);
@@ -684,11 +687,12 @@
     
     document.getElementById('unassigned-count').innerText = unassigned.length;
     unassigned.forEach(student => {
-      pool.appendChild(createStudentCard(student));
+      pool.appendChild(createStudentCard(student, false)); /* showScores = false (隱藏分數) */
     });
   }
 
-  function createStudentCard(student) {
+  /* 學生名牌卡片（可控制是否顯示右側分數與狀態） */
+  function createStudentCard(student, showScores = true) {
     const card = document.createElement('div');
     const isAbsent = student.attendance && student.attendance[db.currentWeek] === '缺席';
     const isScored = lastScoredStudentId === student.id;
@@ -700,12 +704,19 @@
     card.ondragstart = () => { draggedStudentId = student.id; };
     card.onclick = (e) => { e.stopPropagation(); openStudentModal(student.id); };
 
+    let scoresHTML = '';
+    if (showScores) {
+      scoresHTML = `
+        <div class="card-scores">
+          ${isAbsent ? '<span class="badge-absent">缺</span>' : ''}
+          <span class="badge-personal">${weekScore}分</span>
+        </div>
+      `;
+    }
+
     card.innerHTML = `
       <div class="card-name">${student.name}</div>
-      <div class="card-scores">
-        ${isAbsent ? '<span class="badge-absent">缺</span>' : ''}
-        <span class="badge-personal">${weekScore}分</span>
-      </div>
+      ${scoresHTML}
     `;
     return card;
   }
