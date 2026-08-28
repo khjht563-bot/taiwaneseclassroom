@@ -234,7 +234,7 @@
     .danger-zone { border: 1px solid #f5c4c0; background: var(--accent-red-light); padding: 10px; border-radius: var(--radius-sm); margin-top: 8px; }
   </style>
 </head>
-<body onload="init()">
+<body>
 
 <div class="container">
   <h1>阿欣的台語教室</h1>
@@ -317,9 +317,137 @@
   </div>
 </div>
 
+<!-- Modal 1: 匯入學生名單 -->
+<div class="modal" id="import-modal" onclick="closeModalOnOutsideClick(event, 'import-modal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3>匯入學生名單</h3>
+    <p style="font-size: 13.5px; color: var(--text-muted);">請貼上學生姓名（一行一個名字）：</p>
+    <textarea id="import-text" placeholder="張小明&#10;李大華&#10;王美麗"></textarea>
+    <div style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 12px;">
+      <button class="btn-gray" onclick="closeModal('import-modal')">取消</button>
+      <button class="btn-blue" onclick="processImport()">確定匯入</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: 個人學生操作 -->
+<div class="modal" id="student-modal" onclick="closeModalOnOutsideClick(event, 'student-modal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="student-header-box">
+      <div class="student-info-left">
+        <h3 class="student-info-name" id="modal-student-name">學生姓名</h3>
+        <div class="student-info-group" id="modal-student-group">第 1 組</div>
+      </div>
+      <div class="student-score-right">
+        <span class="score-label">本週分數</span>
+        <span class="score-value" id="modal-student-score">0</span>
+      </div>
+    </div>
+
+    <div style="margin: 4px 0; text-align: left;">
+      <h4 style="margin: 0 0 4px 0; color: var(--accent-green); font-size: 13.5px;">🟢 加分項目</h4>
+      <div class="quick-btn-grid-plus">
+        <button class="btn-soft-green" onclick="adjustPersonalScore(2, '回答問題')">回答問題 (+2)</button>
+        <button class="btn-soft-green" onclick="adjustPersonalScore(4, '講甲誠好')">講甲誠好 (+4)</button>
+        <button class="btn-soft-green" onclick="adjustPersonalScore(2, '鬥相共')">鬥相共 (+2)</button>
+        <button class="btn-soft-green" onclick="adjustPersonalScore(2, '認真討論')">認真討論 (+2)</button>
+      </div>
+    </div>
+
+    <div style="margin: 6px 0; text-align: left;">
+      <h4 style="margin: 4px 0 4px 0; color: var(--accent-red); font-size: 13.5px;">🔴 扣分項目</h4>
+      <div class="quick-btn-grid-minus">
+        <button class="btn-soft-red" onclick="adjustPersonalScore(-1, '上課晏到')">上課晏到 (-1)</button>
+        <button class="btn-soft-red" onclick="adjustPersonalScore(-1, '無紮課本/簿仔')">無紮課本/簿仔 (-1)</button>
+        <button class="btn-soft-red" onclick="adjustPersonalScore(-2, '兩項無紮')">兩項無紮 (-2)</button>
+        <button class="btn-soft-red" onclick="adjustPersonalScore(-1, '無認真討論')">無認真討論 (-1)</button>
+        <button class="btn-soft-red" onclick="adjustPersonalScore(-1, '影響上課')" style="grid-column: span 2;">影響上課 (-1)</button>
+      </div>
+    </div>
+    
+    <div style="margin-top: 8px; border-top: 1px dashed var(--border-color); padding-top: 8px; display: flex; gap: 6px; align-items: center;">
+      <button class="btn-green" style="flex: 1; padding: 6px; font-size: 13.5px;" onclick="adjustPersonalScore(1, '手動加分')">+1 分</button>
+      <button class="btn-red" style="flex: 1; padding: 6px; font-size: 13.5px;" onclick="adjustPersonalScore(-1, '手動扣分')">-1 分</button>
+      <button class="btn-blue" id="modal-absent-btn" style="flex: 1.5; padding: 6px; font-size: 13.5px;" onclick="toggleAbsent()">標記缺席</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 3: 歷程紀錄 -->
+<div class="modal" id="log-modal" onclick="closeModalOnOutsideClick(event, 'log-modal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3>操作歷程紀錄</h3>
+    <ul class="log-list" id="log-list"></ul>
+    <div style="display:flex; justify-content: flex-end; margin-top: 10px;">
+      <button class="btn-gray" onclick="closeModal('log-modal')">關閉</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 4: 自訂匯出 -->
+<div class="modal" id="export-modal" onclick="closeModalOnOutsideClick(event, 'export-modal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3>自訂匯出內容</h3>
+    <p style="font-size: 13.5px; color: var(--text-muted);">請勾選希望匯出至 Excel (CSV) 的項目：</p>
+    
+    <div class="checkbox-group">
+      <label><input type="checkbox" id="chk-scores" checked> 匯出指定區間個人與小組積分</label>
+      <label><input type="checkbox" id="chk-range-absent" checked> 匯出指定區間缺席次數與細節</label>
+      <label><input type="checkbox" id="chk-total-absent" checked> 匯出歷史累計總缺席次數</label>
+      <label><input type="checkbox" id="chk-logs" checked> 匯出完整操作歷程紀錄</label>
+    </div>
+
+    <div style="display:flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
+      <button class="btn-gray" onclick="closeModal('export-modal')">取消</button>
+      <button class="btn-green" onclick="processExport()">匯出檔案</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 5: 清除資料 -->
+<div class="modal" id="clear-modal" onclick="closeModalOnOutsideClick(event, 'clear-modal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3>🗑️ 清除班級資料</h3>
+    <p style="font-size: 13.5px; color: var(--text-muted);">請選擇您欲執行的動作（僅針對當前班級）：</p>
+    
+    <div class="danger-zone">
+      <h4 style="margin: 0 0 4px 0; color: var(--accent-red); font-size: 14.5px;">選項 A：重設成績與出缺席</h4>
+      <p style="margin: 0 0 6px 0; font-size: 12.5px; color: var(--text-muted);">保留學生名單與座位，僅將積分歸零並清空出缺席。</p>
+      <button class="btn-red" onclick="executeClear('reset_scores')">重設成績與紀錄</button>
+    </div>
+
+    <div class="danger-zone">
+      <h4 style="margin: 0 0 4px 0; color: var(--accent-red); font-size: 14.5px;">選項 B：清空當前班級所有資料</h4>
+      <p style="margin: 0 0 6px 0; font-size: 12.5px; color: var(--text-muted);">刪除當前班級的所有學生名單、座位與歷程。</p>
+      <button class="btn-red" style="background-color: #a85852;" onclick="executeClear('clear_all')">清空全班學生名單</button>
+    </div>
+
+    <div style="display:flex; justify-content: flex-end; margin-top: 12px;">
+      <button class="btn-gray" onclick="closeModal('clear-modal')">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 6: 查看缺席週次明細 -->
+<div class="modal" id="absent-details-modal" onclick="closeModalOnOutsideClick(event, 'absent-details-modal')">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3 id="absent-detail-name">學生缺席紀錄細節</h3>
+    <div style="margin: 10px 0;">
+      <h4 style="margin-bottom: 4px; font-size: 14px;">📍 指定統計區間缺席：</h4>
+      <p id="absent-range-weeks" style="font-size: 13.5px; color: var(--accent-red); font-weight: 600; background: var(--accent-red-light); padding: 8px; border-radius: var(--radius-sm); margin: 0;"></p>
+      
+      <h4 style="margin-bottom: 4px; margin-top: 10px; font-size: 14px;">🗓️ 歷史全部缺席週次：</h4>
+      <p id="absent-all-weeks" style="font-size: 13.5px; color: var(--text-main); background: #faf8f5; padding: 8px; border-radius: var(--radius-sm); margin: 0; border: 1px solid var(--border-color);"></p>
+    </div>
+    <div style="display:flex; justify-content: flex-end; margin-top: 12px;">
+      <button class="btn-gray" onclick="closeModal('absent-details-modal')">關閉</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  // Google API 驗證及 Drive 同步邏輯 (保持持續登入)
-  const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com'; // 請填入您自己的 Client ID
+  // ⚠️ 請填入您原先可以用的 Client ID
+  const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com'; 
   const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
 
   let tokenClient;
@@ -344,7 +472,7 @@
         if (resp.error !== undefined) {
           throw (resp);
         }
-        // 儲存Token與登入標記
+        // 紀錄登入 Token 與過期時間
         const expireTime = Date.now() + (resp.expires_in * 1000);
         localStorage.setItem('g_access_token', resp.access_token);
         localStorage.setItem('g_token_expires_at', expireTime);
@@ -357,7 +485,7 @@
     checkAuthAndAutoLogin();
   }
 
-  // 檢查是否曾經登入並嘗試靜默自動登入/恢復 Token
+  // 自動登入檢查（重新整理時會自動執行此函式）
   function checkAuthAndAutoLogin() {
     if (!gapiInited || !gisInited) return;
 
@@ -370,7 +498,7 @@
         gapi.client.setToken({ access_token: accessToken });
         updateCloudStatus(true);
       } else {
-        // Token 已過期或不存在，自動觸發無彈窗的背景 Token 請求 (prompt: '')
+        // Token 過期時自動靜默向 Google 重新取得存取授權
         tokenClient.requestAccessToken({ prompt: '' });
       }
     }
@@ -387,18 +515,20 @@
   function updateCloudStatus(active) {
     const badge = document.getElementById('cloud-status-badge');
     const authBtn = document.getElementById('auth-btn');
-    if (active) {
-      badge.classList.add('active');
-      badge.innerText = '☁️ 已同步 Google 帳戶';
-      authBtn.innerText = '🔄 重新同步雲端';
-    } else {
-      badge.classList.remove('active');
-      badge.innerText = '☁️ 未登入同步';
-      authBtn.innerText = '🔑 登入 / 載入雲端';
+    if (badge) {
+      if (active) {
+        badge.classList.add('active');
+        badge.innerText = '☁️ 已同步 Google 帳戶';
+        if (authBtn) authBtn.innerText = '🔄 重新同步雲端';
+      } else {
+        badge.classList.remove('active');
+        badge.innerText = '☁️ 未登入同步';
+        if (authBtn) authBtn.innerText = '🔑 登入 / 載入雲端';
+      }
     }
   }
 
-  // 系統基礎數據與邏輯處理
+  // 系統主要邏輯數據變數
   const TOTAL_SEATS = 36;
   let lastScoredStudentId = null;
 
@@ -420,6 +550,26 @@
       }
     }
   };
+
+  let activeStudentId = null;
+  let draggedStudentId = null;
+
+  function clearScoredStatus() { lastScoredStudentId = null; }
+
+  function getTimestamp() {
+    const now = new Date();
+    const pad = n => n.toString().padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  }
+
+  function addLog(actionText) {
+    const classData = db.classes[db.currentClass];
+    if (classData) {
+      if (!classData.logs) classData.logs = [];
+      classData.logs.unshift({ timestamp: getTimestamp(), week: db.currentWeek, text: actionText });
+      saveStorage();
+    }
+  }
 
   function init() {
     const saved = localStorage.getItem('smart_classroom_db');
@@ -552,10 +702,15 @@
     for (let i = 0; i < TOTAL_SEATS; i++) {
       const slot = document.createElement('div');
       slot.className = 'seat-slot';
+      slot.ondragover = allowDrop;
+      slot.ondragleave = handleDragLeave;
+      slot.ondrop = (e) => dropToSeat(e, i);
+
       const student = classData.students.find(s => s.seatIndex === i);
       if (student) {
         slot.appendChild(createStudentCard(student, true));
       }
+
       grid.appendChild(slot);
     }
   }
@@ -579,6 +734,10 @@
     const weekScore = getStudentPersonalScore(student, db.currentWeek);
 
     card.className = `student-card ${isAbsent ? 'absent' : ''} ${isScored ? 'scored' : ''}`;
+    card.draggable = true;
+
+    card.ondragstart = () => { draggedStudentId = student.id; };
+    card.onclick = (e) => { e.stopPropagation(); openStudentModal(student.id); };
 
     let scoresHTML = '';
     if (showScores) {
@@ -599,7 +758,10 @@
 
   function renderStatsTable() {
     const tbody = document.getElementById('stats-tbody');
+    const cardsGrid = document.getElementById('stats-cards-grid');
     tbody.innerHTML = '';
+    cardsGrid.innerHTML = '';
+
     const classData = getCurrentClassObj();
     
     const startWk = document.getElementById('stats-start-week').value || db.currentWeek;
@@ -651,10 +813,10 @@
         <td>${groupNum !== '-' ? '第 ' + groupNum + ' 組' : '-'}</td>
         <td style="color: var(--accent-blue); font-weight: 700;">${rangePersonalScore}</td>
         <td style="color: var(--accent-green); font-weight: 700;">${groupNum !== '-' ? rangeGroupScore : '-'}</td>
-        <td class="clickable-absent" style="color: ${rangeAbsentWeeks.length > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
+        <td class="clickable-absent" style="color: ${rangeAbsentWeeks.length > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};" onclick="showAbsentDetails('${s.id}', '${startWk}', '${endWk}')">
           ${rangeAbsentWeeks.length} 次
         </td>
-        <td class="clickable-absent" style="color: ${totalAbsentWeeks.length > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};">
+        <td class="clickable-absent" style="color: ${totalAbsentWeeks.length > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};" onclick="showAbsentDetails('${s.id}', '${startWk}', '${endWk}')">
           ${totalAbsentWeeks.length} 次
         </td>
       `;
@@ -662,9 +824,305 @@
     });
   }
 
-  function uploadToDrive(silent = false) {
-    if (!silent) console.log("上傳雲端同步中...");
+  // 拖曳相關處理
+  function allowDrop(e) { e.preventDefault(); }
+  function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+  
+  function dropToSeat(e, seatIdx) {
+    e.preventDefault();
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === draggedStudentId);
+    if (student) {
+      student.seatIndex = seatIdx;
+      addLog(`將學生【${student.name}】拖曳調整座位`);
+      renderAll();
+    }
   }
+
+  function dropToPool(e) {
+    e.preventDefault();
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === draggedStudentId);
+    if (student) {
+      student.seatIndex = null;
+      addLog(`將學生【${student.name}】移回待分配學生庫`);
+      renderAll();
+    }
+  }
+
+  // 小組與個人加減分動作
+  function adjustGroupScore(groupNum, delta) {
+    const classData = getCurrentClassObj();
+    if (!classData.groupScoresByWeek[db.currentWeek]) {
+      classData.groupScoresByWeek[db.currentWeek] = {};
+    }
+    const current = classData.groupScoresByWeek[db.currentWeek][groupNum] || 0;
+    classData.groupScoresByWeek[db.currentWeek][groupNum] = current + delta;
+    
+    addLog(`第 ${groupNum} 組 ${delta > 0 ? '+' + delta : delta} 分 (小組總分: ${classData.groupScoresByWeek[db.currentWeek][groupNum]})`);
+    renderAll();
+  }
+
+  function adjustPersonalScore(delta, reason) {
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === activeStudentId);
+    if (student) {
+      if (!student.scoresByWeek) student.scoresByWeek = {};
+      const current = student.scoresByWeek[db.currentWeek] || 0;
+      student.scoresByWeek[db.currentWeek] = current + delta;
+      lastScoredStudentId = student.id;
+
+      addLog(`學生【${student.name}】${reason} (${delta > 0 ? '+' + delta : delta} 分)`);
+      updateStudentModalScore(student);
+      renderAll();
+    }
+  }
+
+  function toggleAbsent() {
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === activeStudentId);
+    if (student) {
+      if (!student.attendance) student.attendance = {};
+      const current = student.attendance[db.currentWeek];
+      if (current === '缺席') {
+        delete student.attendance[db.currentWeek];
+        addLog(`取消學生【${student.name}】本週缺席標記`);
+      } else {
+        student.attendance[db.currentWeek] = '缺席';
+        addLog(`標記學生【${student.name}】本週缺席`);
+      }
+      closeModal('student-modal');
+      renderAll();
+    }
+  }
+
+  // Modal 彈窗控制
+  function openStudentModal(id) {
+    activeStudentId = id;
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === id);
+    if (student) {
+      const groupNum = student.seatIndex !== null && student.seatIndex !== undefined ? (student.seatIndex % 6) + 1 : "無";
+      document.getElementById('modal-student-name').innerText = student.name;
+      document.getElementById('modal-student-group').innerText = `第 ${groupNum} 組`;
+      
+      updateStudentModalScore(student);
+
+      const isAbsent = student.attendance && student.attendance[db.currentWeek] === '缺席';
+      const absentBtn = document.getElementById('modal-absent-btn');
+      absentBtn.innerText = isAbsent ? '取消缺席' : '標記缺席';
+      absentBtn.className = isAbsent ? 'btn-green' : 'btn-blue';
+
+      document.getElementById('student-modal').style.display = 'flex';
+    }
+  }
+
+  function updateStudentModalScore(student) {
+    const weekScore = getStudentPersonalScore(student, db.currentWeek);
+    document.getElementById('modal-student-score').innerText = weekScore;
+  }
+
+  function showAbsentDetails(studentId, startWk, endWk) {
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === studentId);
+    if (!student) return;
+
+    document.getElementById('absent-detail-name').innerText = `【${student.name}】缺席紀錄明細`;
+
+    const startIdx = classData.weeks.indexOf(startWk);
+    const endIdx = classData.weeks.indexOf(endWk);
+    const minIdx = Math.min(startIdx, endIdx);
+    const maxIdx = Math.max(startIdx, endIdx);
+    const selectedWeeks = classData.weeks.slice(minIdx, maxIdx + 1);
+
+    let rangeAbsent = [];
+    let totalAbsent = [];
+
+    if (student.attendance) {
+      Object.entries(student.attendance).forEach(([wk, status]) => {
+        if (status === '缺席') {
+          totalAbsent.push(wk);
+          if (selectedWeeks.includes(wk)) {
+            rangeAbsent.push(wk);
+          }
+        }
+      });
+    }
+
+    document.getElementById('absent-range-weeks').innerText = rangeAbsent.length > 0 ? rangeAbsent.join(', ') : '此區間無缺席紀錄';
+    document.getElementById('absent-all-weeks').innerText = totalAbsent.length > 0 ? totalAbsent.join(', ') : '無任何歷史缺席紀錄';
+
+    document.getElementById('absent-details-modal').style.display = 'flex';
+  }
+
+  function openImportModal() { document.getElementById('import-modal').style.display = 'flex'; }
+  function openLogModal() { 
+    const classData = getCurrentClassObj();
+    const logList = document.getElementById('log-list');
+    logList.innerHTML = '';
+    if (classData && classData.logs) {
+      classData.logs.forEach(l => {
+        const li = document.createElement('li');
+        li.className = 'log-item';
+        li.innerHTML = `<span class="log-time">[${l.timestamp}] (${l.week})</span> ${l.text}`;
+        logList.appendChild(li);
+      });
+    }
+    document.getElementById('log-modal').style.display = 'flex'; 
+  }
+  function openExportModal() { document.getElementById('export-modal').style.display = 'flex'; }
+  function openClearModal() { document.getElementById('clear-modal').style.display = 'flex'; }
+
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+  function closeModalOnOutsideClick(e, id) { if (e.target.id === id) closeModal(id); }
+
+  // 選單切換
+  function switchClass() {
+    db.currentClass = document.getElementById('class-select').value;
+    saveStorage();
+    renderSelectors();
+    renderAll();
+  }
+
+  function switchWeek() {
+    db.currentWeek = document.getElementById('week-select').value;
+    clearScoredStatus();
+    saveStorage();
+    renderAll();
+  }
+
+  function addClassPrompt() {
+    const name = prompt("請輸入新班級名稱：");
+    if (name && name.trim()) {
+      if (!db.classes[name]) {
+        db.classes[name] = {
+          weeks: generateDefaultWeeks(),
+          students: [],
+          groupScoresByWeek: {},
+          logs: []
+        };
+        db.currentClass = name;
+        saveStorage();
+        renderSelectors();
+        renderAll();
+      } else {
+        alert("該班級名稱已存在！");
+      }
+    }
+  }
+
+  function deleteClassPrompt() {
+    const classNames = Object.keys(db.classes);
+    if (classNames.length <= 1) {
+      alert("系統中必須保留至少一個班級！");
+      return;
+    }
+    if (confirm(`確定要刪除「${db.currentClass}」及其所有學生紀錄嗎？此動作無法復原。`)) {
+      delete db.classes[db.currentClass];
+      db.currentClass = Object.keys(db.classes)[0];
+      saveStorage();
+      renderSelectors();
+      renderAll();
+    }
+  }
+
+  function processImport() {
+    const text = document.getElementById('import-text').value;
+    const names = text.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+    if (names.length === 0) return;
+
+    const classData = getCurrentClassObj();
+    names.forEach(name => {
+      classData.students.push({
+        id: 'st_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+        name: name,
+        seatIndex: null,
+        scoresByWeek: {},
+        attendance: {}
+      });
+    });
+
+    document.getElementById('import-text').value = '';
+    addLog(`匯入 ${names.length} 名學生`);
+    closeModal('import-modal');
+    renderAll();
+  }
+
+  function executeClear(type) {
+    const classData = getCurrentClassObj();
+    if (type === 'reset_scores') {
+      classData.students.forEach(s => {
+        s.scoresByWeek = {};
+        s.attendance = {};
+      });
+      classData.groupScoresByWeek = {};
+      addLog("重設成績與出缺席紀錄");
+    } else if (type === 'clear_all') {
+      classData.students = [];
+      classData.groupScoresByWeek = {};
+      classData.logs = [];
+      addLog("清空全班學生名單與資料");
+    }
+    closeModal('clear-modal');
+    renderAll();
+  }
+
+  function processExport() {
+    const classData = getCurrentClassObj();
+    let csvContent = "\uFEFF"; // UTF-8 BOM
+    csvContent += "學生姓名,組別,個人積分,小組積分,區間缺席次數,總缺席次數\n";
+
+    const startWk = document.getElementById('stats-start-week').value || db.currentWeek;
+    const endWk = document.getElementById('stats-end-week').value || db.currentWeek;
+    
+    const startIdx = classData.weeks.indexOf(startWk);
+    const endIdx = classData.weeks.indexOf(endWk);
+    const minIdx = Math.min(startIdx, endIdx);
+    const maxIdx = Math.max(startIdx, endIdx);
+    const selectedWeeks = classData.weeks.slice(minIdx, maxIdx + 1);
+
+    classData.students.forEach(s => {
+      const groupNum = s.seatIndex !== null && s.seatIndex !== undefined ? (s.seatIndex % 6) + 1 : "-";
+      let pScore = 0;
+      if (s.scoresByWeek) {
+        selectedWeeks.forEach(wk => pScore += (s.scoresByWeek[wk] || 0));
+      }
+      let gScore = 0;
+      if (groupNum !== "-") {
+        selectedWeeks.forEach(wk => {
+          if (classData.groupScoresByWeek[wk]) gScore += (classData.groupScoresByWeek[wk][groupNum] || 0);
+        });
+      }
+      let rangeAbsent = 0;
+      let totalAbsent = 0;
+      if (s.attendance) {
+        Object.entries(s.attendance).forEach(([wk, status]) => {
+          if (status === '缺席') {
+            totalAbsent++;
+            if (selectedWeeks.includes(wk)) rangeAbsent++;
+          }
+        });
+      }
+      csvContent += `"${s.name}","${groupNum !== '-' ? '第' + groupNum + '組' : '-'}","${pScore}","${groupNum !== '-' ? gScore : '-'}","${rangeAbsent}","${totalAbsent}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${db.currentClass}_成績統計.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    closeModal('export-modal');
+  }
+
+  function uploadToDrive(silent = false) {
+    if (!silent) console.log("雲端自動同步中...");
+  }
+
+  // 初始化頁面執行
+  window.addEventListener('DOMContentLoaded', init);
 </script>
 
 </body>
