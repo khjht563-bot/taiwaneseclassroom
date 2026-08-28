@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
-  <head>
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>阿欣的台語教室</title>
+  
+  <!-- Google API SDK Script -->
+  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang TC", "Microsoft JhengHei", sans-serif; }
-    /* 全站基礎字體放大至 16px */
     body { background-color: #f1f5f9; color: #1e293b; margin: 0; padding: 8px; font-size: 16px; }
     h1 { margin: 5px 0 12px 0; color: #0f172a; font-size: 24px; font-weight: 800; text-align: center; }
     h3 { margin: 0 0 8px 0; color: #334155; font-size: 18px; }
@@ -74,17 +76,15 @@
     /* 座位區 */
     .classroom-area { display: flex; flex-direction: column; gap: 6px; }
 
-    /* 小組標頭：字體放大與同一橫排排版 */
+    /* 小組標頭：同一橫排排版 */
     .group-headers { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
     .group-card {
       background: #e2e8f0; border-top: 3px solid #3b82f6; border-radius: 6px;
       padding: 4px 2px; text-align: center; font-size: 13px;
       display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px;
     }
-    /* 「第 X 組」字樣放大至 18px */
     .group-card h4 { margin: 0; color: #0f172a; font-size: 18px; font-weight: 800; white-space: nowrap; }
     
-    /* 小組積分在左，加扣分按鈕在右 */
     .group-score-row {
       display: flex; align-items: center; justify-content: space-between; gap: 4px; width: 100%; padding: 0 4px;
     }
@@ -101,7 +101,7 @@
     }
     .seat-slot.drag-over { background: #e0f2fe; border-color: #38bdf8; }
 
-    /* 學生卡片：左右排列 + 大字體 */
+    /* 學生卡片 */
     .student-card {
       width: 100%; height: 100%; background: white; border: 1.5px solid #94a3b8; border-radius: 5px;
       padding: 2px 6px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
@@ -109,16 +109,12 @@
       display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 4px;
     }
     .student-card.absent { background-color: #fee2e2; border-color: #f87171; }
-    
-    /* 個人加分後的灰底樣式 */
     .student-card.scored { background-color: #cbd5e1 !important; border-color: #64748b !important; }
     
-    /* 卡片左側姓名 */
     .card-name { 
       font-weight: bold; font-size: 15px; color: #0f172a; 
       line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; text-align: left;
     }
-    /* 卡片右側分數與狀態標籤 */
     .card-scores { 
       display: flex; align-items: center; justify-content: flex-end; gap: 2px; flex-shrink: 0;
     }
@@ -139,12 +135,10 @@
     .stats-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 6px; }
     .stats-container { overflow-x: auto; }
 
-    /* 電腦版表格樣式 */
     table.stats-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 15px; table-layout: fixed; }
     table.stats-table th, table.stats-table td { border: 1px solid #e2e8f0; padding: 4px 2px; word-break: break-all; }
     table.stats-table th { background: #f1f5f9; position: sticky; top: 0; z-index: 10; font-size: 15px; white-space: nowrap; }
 
-    /* 手機版卡片樣式 */
     .stats-cards-grid { display: none; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
     .stat-card-item {
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px;
@@ -155,7 +149,6 @@
     .stat-card-group { font-size: 13px; color: #64748b; }
     .stat-card-row { display: flex; justify-content: space-between; align-items: center; }
 
-    /* 手機模式自動切換 */
     @media (max-width: 640px) {
       table.stats-table { display: none; }
       .stats-cards-grid { display: grid; }
@@ -174,7 +167,6 @@
     }
     .modal-content textarea { width: 100%; height: 110px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 15px; }
 
-    /* 個人 Modal 特殊標頭 */
     .student-header-box {
       display: flex; justify-content: space-between; align-items: center;
       background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px 10px;
@@ -190,7 +182,6 @@
     .score-label { font-size: 11px; color: #2563eb; font-weight: bold; }
     .score-value { font-size: 20px; font-weight: 800; color: #1d4ed8; line-height: 1; }
 
-    /* 按鈕網格 */
     .quick-btn-grid-plus { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
     .quick-btn-grid-minus { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
 
@@ -209,7 +200,7 @@
 <div class="container">
   <h1>阿欣的台語教室</h1>
 
-  <!-- 頂部控制面板：單排結構 -->
+  <!-- 頂部控制面板 -->
   <div class="panel">
     <div class="control-item">
       <label><b>班級：</b></label>
@@ -228,27 +219,22 @@
       <button class="btn-purple" onclick="openLogModal()">📜 歷程</button>
       <button class="btn-green" onclick="openExportModal()">📥 匯出</button>
       <button class="btn-red" onclick="openClearModal()">🗑️ 清除</button>
-      <button type="button" class="btn-blue" onclick="handleAuthClick()">🔑 登入 Google 雲端</button>
+      <!-- 雙按鈕：雲端載入與手動備份 -->
+      <button type="button" class="btn-blue" onclick="handleAuthClick()">🔑 登入 / 載入雲端</button>
+      <button type="button" class="btn-green" onclick="uploadToDrive(false)">☁️ 手動備份至雲端</button>
     </div>
   </div>
 
   <!-- 主要內容區 -->
   <div class="main-layout">
-    <!-- 待分配學生庫 -->
     <div class="unassigned-pool">
       <h3>待分配學生 (<span id="unassigned-count">0</span>)</h3>
       <div class="pool-list" id="unassigned-list" ondrop="dropToPool(event)" ondragover="allowDrop(event)"></div>
     </div>
 
-    <!-- 座位區與講台 -->
     <div class="classroom-area">
-      <!-- 1-6組 小組標頭 -->
       <div class="group-headers" id="group-headers"></div>
-
-      <!-- 6x6 固定座位表 -->
       <div class="grid-container" id="grid-container"></div>
-
-      <!-- 講桌 -->
       <div class="podium">講桌 / 黑板方向</div>
     </div>
   </div>
@@ -288,7 +274,6 @@
         <tbody id="stats-tbody"></tbody>
       </table>
 
-      <!-- 手機版卡片顯示區 -->
       <div class="stats-cards-grid" id="stats-cards-grid"></div>
     </div>
   </div>
@@ -310,7 +295,6 @@
 <!-- Modal 2: 個人學生操作 -->
 <div class="modal" id="student-modal">
   <div class="modal-content">
-    <!-- 標頭卡片 -->
     <div class="student-header-box">
       <div class="student-info-left">
         <h3 class="student-info-name" id="modal-student-name">學生姓名</h3>
@@ -322,7 +306,6 @@
       </div>
     </div>
 
-    <!-- 加分快捷鍵 -->
     <div style="margin: 4px 0; text-align: left;">
       <h4 style="margin: 0 0 2px 0; color: #16a34a; font-size: 14px;">🟢 加分</h4>
       <div class="quick-btn-grid-plus">
@@ -333,7 +316,6 @@
       </div>
     </div>
 
-    <!-- 扣分快捷鍵 -->
     <div style="margin: 4px 0; text-align: left;">
       <h4 style="margin: 2px 0 2px 0; color: #dc2626; font-size: 14px;">🔴 扣分</h4>
       <div class="quick-btn-grid-minus">
@@ -345,7 +327,6 @@
       </div>
     </div>
     
-    <!-- 微調區塊與出缺席 -->
     <div style="margin-top: 4px; border-top: 1px dashed #cbd5e1; padding-top: 4px; display: flex; gap: 6px; align-items: center;">
       <button class="btn-green" style="flex: 1; padding: 6px; font-size: 14px;" onclick="adjustPersonalScore(1, '手動加分')">+1 分</button>
       <button class="btn-red" style="flex: 1; padding: 6px; font-size: 14px;" onclick="adjustPersonalScore(-1, '手動扣分')">-1 分</button>
@@ -430,8 +411,8 @@
 
 <script>
   const TOTAL_SEATS = 36;
-  let lastScoredStudentId = null; // 紀錄最後一位被加分的學生ID以控制灰底
-  
+  let lastScoredStudentId = null;
+
   function generateDefaultWeeks() {
     let weeks = [];
     for (let i = 1; i <= 20; i++) weeks.push(`第 ${i} 週`);
@@ -454,9 +435,7 @@
   let activeStudentId = null;
   let draggedStudentId = null;
 
-  function clearScoredStatus() {
-    lastScoredStudentId = null;
-  }
+  function clearScoredStatus() { lastScoredStudentId = null; }
 
   function getTimestamp() {
     const now = new Date();
@@ -467,6 +446,7 @@
   function addLog(actionText) {
     const classData = db.classes[db.currentClass];
     if (classData) {
+      if (!classData.logs) classData.logs = [];
       classData.logs.unshift({ timestamp: getTimestamp(), week: db.currentWeek, text: actionText });
       saveStorage();
     }
@@ -475,15 +455,20 @@
   function init() {
     const saved = localStorage.getItem('smart_classroom_db');
     if (saved) {
-      db = JSON.parse(saved);
-      Object.keys(db.classes).forEach(cName => {
-        if (!db.classes[cName].weeks || db.classes[cName].weeks.length < 20) {
-          db.classes[cName].weeks = generateDefaultWeeks();
-        }
-        if (!db.classes[cName].groupScoresByWeek) {
-          db.classes[cName].groupScoresByWeek = {};
-        }
-      });
+      try {
+        db = JSON.parse(saved);
+        Object.keys(db.classes).forEach(cName => {
+          if (!db.classes[cName].weeks || db.classes[cName].weeks.length < 20) {
+            db.classes[cName].weeks = generateDefaultWeeks();
+          }
+          if (!db.classes[cName].groupScoresByWeek) {
+            db.classes[cName].groupScoresByWeek = {};
+          }
+          if (!db.classes[cName].logs) {
+            db.classes[cName].logs = [];
+          }
+        });
+      } catch (e) { console.error("JSON Read Error:", e); }
     } else {
       saveStorage();
     }
@@ -491,7 +476,6 @@
     renderAll();
   }
 
-  // 儲存資料到本地，若已登入則自動背景同步至雲端
   function saveStorage() {
     localStorage.setItem('smart_classroom_db', JSON.stringify(db));
     if (typeof gapi !== 'undefined' && gapi.client && gapi.client.getToken() !== null) {
@@ -499,9 +483,7 @@
     }
   }
 
-  function getCurrentClassObj() {
-    return db.classes[db.currentClass];
-  }
+  function getCurrentClassObj() { return db.classes[db.currentClass]; }
 
   function renderSelectors() {
     const classSelect = document.getElementById('class-select');
@@ -529,7 +511,6 @@
           opt.value = wk; opt.innerText = wk;
           return opt;
         };
-
         const opt1 = createOpt(); if (wk === db.currentWeek) opt1.selected = true;
         weekSelect.appendChild(opt1);
 
@@ -572,7 +553,6 @@
     return total;
   }
 
-  /* 小組積分在左，加扣分按鈕在右 */
   function renderGroupHeaders() {
     const container = document.getElementById('group-headers');
     container.innerHTML = '';
@@ -669,7 +649,7 @@
     const selectedWeeks = classData.weeks.slice(minIdx, maxIdx + 1);
 
     classData.students.forEach(s => {
-      const groupNum = s.seatIndex !== null ? (s.seatIndex % 6) + 1 : "-";
+      const groupNum = s.seatIndex !== null && s.seatIndex !== undefined ? (s.seatIndex % 6) + 1 : "-";
       
       let rangePersonalScore = 0;
       if (s.scoresByWeek) {
@@ -701,7 +681,6 @@
         });
       }
 
-      // 電腦版表格
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><b>${s.name}</b></td>
@@ -717,7 +696,6 @@
       `;
       tbody.appendChild(tr);
 
-      // 手機版卡片
       const card = document.createElement('div');
       card.className = 'stat-card-item';
       card.innerHTML = `
@@ -797,7 +775,7 @@
   function dropToSeat(e, targetSeatIndex) {
     e.preventDefault();
     e.currentTarget.classList.remove('drag-over');
-    clearScoredStatus(); // 做其他動作清除灰底
+    clearScoredStatus();
     const classData = getCurrentClassObj();
     const student = classData.students.find(s => s.id === draggedStudentId);
     
@@ -814,7 +792,7 @@
 
   function dropToPool(e) {
     e.preventDefault();
-    clearScoredStatus(); // 做其他動作清除灰底
+    clearScoredStatus();
     const classData = getCurrentClassObj();
     const student = classData.students.find(s => s.id === draggedStudentId);
     if (student && student.seatIndex !== null) {
@@ -826,57 +804,19 @@
   }
 
   function adjustGroupScore(groupNum, delta) {
-    clearScoredStatus(); // 做其他動作清除灰底
+    clearScoredStatus();
     const classData = getCurrentClassObj();
     if (!classData.groupScoresByWeek[db.currentWeek]) {
       classData.groupScoresByWeek[db.currentWeek] = {};
     }
     const currentScore = classData.groupScoresByWeek[db.currentWeek][groupNum] || 0;
-    classData.groupScoresByWeek[db.currentWeek][groupNum] = currentScore + delta;
+    const newScore = Math.max(0, currentScore + delta);
+    classData.groupScoresByWeek[db.currentWeek][groupNum] = newScore;
 
-    addLog(`小組分數：第 ${groupNum} 組在 [${db.currentWeek}] ${delta > 0 ? '+' : ''}${delta} 分`);
+    addLog(`第 ${groupNum} 組 ${delta > 0 ? '加' : '扣'} ${Math.abs(delta)} 分 (目前 ${newScore} 分)`);
     saveStorage();
-    renderAll();
-  }
-
-  function adjustPersonalScore(delta, reason = '') {
-    const classData = getCurrentClassObj();
-    const student = classData.students.find(s => s.id === activeStudentId);
-    if (student) {
-      if (!student.scoresByWeek) student.scoresByWeek = {};
-      const currentScore = student.scoresByWeek[db.currentWeek] || 0;
-      student.scoresByWeek[db.currentWeek] = currentScore + delta;
-
-      // 若進行加分動作，標記該學生以切換為灰底
-      if (delta > 0) {
-        lastScoredStudentId = student.id;
-      } else {
-        clearScoredStatus();
-      }
-
-      const reasonText = reason ? ` (${reason})` : '';
-      addLog(`個人分數：[${student.name}] 在 [${db.currentWeek}] ${delta > 0 ? '+' : ''}${delta} 分${reasonText}`);
-      saveStorage();
-      renderAll();
-      closeModal('student-modal');
-    }
-  }
-
-  function toggleAbsent() {
-    clearScoredStatus(); // 做其他動作清除灰底
-    const classData = getCurrentClassObj();
-    const student = classData.students.find(s => s.id === activeStudentId);
-    if (student) {
-      if (!student.attendance) student.attendance = {};
-      const currentStatus = student.attendance[db.currentWeek];
-      const newStatus = currentStatus === '缺席' ? '出席' : '缺席';
-      student.attendance[db.currentWeek] = newStatus;
-      
-      addLog(`變更出缺席：[${student.name}] 在 [${db.currentWeek}] 標記為 [${newStatus}]`);
-      saveStorage();
-      renderAll();
-      openStudentModal(student.id);
-    }
+    renderGroupHeaders();
+    renderStatsTable();
   }
 
   function openStudentModal(studentId) {
@@ -885,14 +825,14 @@
     const student = classData.students.find(s => s.id === studentId);
     if (!student) return;
 
-    const groupNum = student.seatIndex !== null ? (student.seatIndex % 6) + 1 : "未分配";
-    const weekScore = getStudentPersonalScore(student, db.currentWeek);
-    const isAbsent = student.attendance && student.attendance[db.currentWeek] === '缺席';
-
     document.getElementById('modal-student-name').innerText = student.name;
+    const groupNum = student.seatIndex !== null && student.seatIndex !== undefined ? (student.seatIndex % 6) + 1 : "未分配";
     document.getElementById('modal-student-group').innerText = groupNum !== "未分配" ? `第 ${groupNum} 組` : "未分配組別";
-    document.getElementById('modal-student-score').innerText = `${weekScore}分`;
+    
+    const weekScore = getStudentPersonalScore(student, db.currentWeek);
+    document.getElementById('modal-student-score').innerText = weekScore;
 
+    const isAbsent = student.attendance && student.attendance[db.currentWeek] === '缺席';
     const absentBtn = document.getElementById('modal-absent-btn');
     if (isAbsent) {
       absentBtn.innerText = "取消缺席";
@@ -905,43 +845,91 @@
     document.getElementById('student-modal').style.display = 'flex';
   }
 
+  function adjustPersonalScore(delta, reason = '') {
+    if (!activeStudentId) return;
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === activeStudentId);
+    if (!student) return;
+
+    if (!student.scoresByWeek) student.scoresByWeek = {};
+    const curScore = student.scoresByWeek[db.currentWeek] || 0;
+    const newScore = Math.max(0, curScore + delta);
+    student.scoresByWeek[db.currentWeek] = newScore;
+
+    lastScoredStudentId = student.id;
+    addLog(`[${student.name}] ${reason ? reason + ' ' : ''}${delta > 0 ? '+' : ''}${delta} 分 (本週 ${newScore} 分)`);
+    
+    saveStorage();
+    document.getElementById('modal-student-score').innerText = newScore;
+    renderAll();
+  }
+
+  function toggleAbsent() {
+    if (!activeStudentId) return;
+    const classData = getCurrentClassObj();
+    const student = classData.students.find(s => s.id === activeStudentId);
+    if (!student) return;
+
+    if (!student.attendance) student.attendance = {};
+    const isAbsent = student.attendance[db.currentWeek] === '缺席';
+
+    if (isAbsent) {
+      delete student.attendance[db.currentWeek];
+      addLog(`[${student.name}] 取消 ${db.currentWeek} 缺席標記`);
+    } else {
+      student.attendance[db.currentWeek] = '缺席';
+      addLog(`[${student.name}] 標記 ${db.currentWeek} 缺席`);
+    }
+
+    saveStorage();
+    closeModal('student-modal');
+    renderAll();
+  }
+
+  // 班級與週次切換
   function switchClass() {
-    clearScoredStatus(); // 切換班級清除灰底
+    clearScoredStatus();
     db.currentClass = document.getElementById('class-select').value;
     saveStorage();
     renderSelectors();
     renderAll();
   }
 
-  function addClassPrompt() {
+  function switchWeek() {
     clearScoredStatus();
-    const name = prompt("請輸入新班級名稱：");
+    db.currentWeek = document.getElementById('week-select').value;
+    saveStorage();
+    renderAll();
+  }
+
+  function addClassPrompt() {
+    const name = prompt("請輸入新班級名稱：", "三年二班");
     if (name && name.trim()) {
       const trimmed = name.trim();
-      if (!db.classes[trimmed]) {
-        db.classes[trimmed] = {
-          weeks: generateDefaultWeeks(),
-          students: [],
-          groupScoresByWeek: {},
-          logs: []
-        };
-        db.currentClass = trimmed;
-        saveStorage();
-        renderSelectors();
-        renderAll();
-      } else {
+      if (db.classes[trimmed]) {
         alert("班級名稱已存在！");
+        return;
       }
+      db.classes[trimmed] = {
+        weeks: generateDefaultWeeks(),
+        students: [],
+        groupScoresByWeek: {},
+        logs: []
+      };
+      db.currentClass = trimmed;
+      saveStorage();
+      renderSelectors();
+      renderAll();
     }
   }
 
   function deleteClassPrompt() {
-    clearScoredStatus();
-    if (Object.keys(db.classes).length <= 1) {
-      alert("至少需保留一個班級，無法刪除！");
+    const keys = Object.keys(db.classes);
+    if (keys.length <= 1) {
+      alert("至少需保留一個班級！");
       return;
     }
-    if (confirm(`確定要刪除班級 [${db.currentClass}] 及其所有學生資料嗎？此操作無法復原！`)) {
+    if (confirm(`確定要刪除「${db.currentClass}」及其所有學生資料嗎？此動作無法復原！`)) {
       delete db.classes[db.currentClass];
       db.currentClass = Object.keys(db.classes)[0];
       saveStorage();
@@ -950,80 +938,46 @@
     }
   }
 
-  function switchWeek() {
-    clearScoredStatus(); // 切換週次清除灰底
-    db.currentWeek = document.getElementById('week-select').value;
-    saveStorage();
-    renderAll();
-  }
-
+  // Modal 功能與匯入/匯出
   function openImportModal() { document.getElementById('import-modal').style.display = 'flex'; }
-  function openLogModal() { 
-    const classData = getCurrentClassObj();
+  function openLogModal() {
     const logList = document.getElementById('log-list');
     logList.innerHTML = '';
-    if (classData.logs.length === 0) {
-      logList.innerHTML = '<li class="log-item" style="text-align:center; color:#94a3b8;">暫無紀錄</li>';
-    } else {
-      classData.logs.forEach(l => {
+    const classData = getCurrentClassObj();
+    if (classData && classData.logs) {
+      classData.logs.forEach(item => {
         const li = document.createElement('li');
         li.className = 'log-item';
-        li.innerHTML = `<span class="log-time">[${l.timestamp}] (${l.week})</span> ${l.text}`;
+        li.innerHTML = `<span class="log-time">[${item.timestamp}] (${item.week})</span> ${item.text}`;
         logList.appendChild(li);
       });
     }
-    document.getElementById('log-modal').style.display = 'flex'; 
+    document.getElementById('log-modal').style.display = 'flex';
   }
   function openExportModal() { document.getElementById('export-modal').style.display = 'flex'; }
   function openClearModal() { document.getElementById('clear-modal').style.display = 'flex'; }
   function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
   function processImport() {
-    clearScoredStatus();
     const text = document.getElementById('import-text').value;
+    if (!text.trim()) return;
     const names = text.split('\n').map(n => n.trim()).filter(n => n.length > 0);
-    if (names.length === 0) { alert("請輸入有效的姓名！"); return; }
-
     const classData = getCurrentClassObj();
-    let importedCount = 0;
-    
-    names.forEach((name) => {
-      const id = 'st_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+
+    names.forEach(name => {
       classData.students.push({
-        id: id,
+        id: 's_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
         name: name,
         seatIndex: null,
         scoresByWeek: {},
         attendance: {}
       });
-      importedCount++;
     });
 
-    addLog(`成功匯入 ${importedCount} 名學生名單`);
+    addLog(`匯入 ${names.length} 名學生`);
     saveStorage();
     document.getElementById('import-text').value = '';
     closeModal('import-modal');
-    renderAll();
-  }
-
-  function executeClear(type) {
-    clearScoredStatus();
-    const classData = getCurrentClassObj();
-    if (type === 'reset_scores') {
-      classData.students.forEach(s => {
-        s.scoresByWeek = {};
-        s.attendance = {};
-      });
-      classData.groupScoresByWeek = {};
-      addLog(`重設班級 [${db.currentClass}] 的成績與出缺席紀錄`);
-    } else if (type === 'clear_all') {
-      classData.students = [];
-      classData.groupScoresByWeek = {};
-      classData.logs = [];
-      addLog(`清空班級 [${db.currentClass}] 的所有學生與資料`);
-    }
-    saveStorage();
-    closeModal('clear-modal');
     renderAll();
   }
 
@@ -1036,91 +990,98 @@
     const classData = getCurrentClassObj();
     const startWk = document.getElementById('stats-start-week').value || db.currentWeek;
     const endWk = document.getElementById('stats-end-week').value || db.currentWeek;
-
+    
     const startIdx = classData.weeks.indexOf(startWk);
     const endIdx = classData.weeks.indexOf(endWk);
     const minIdx = Math.min(startIdx, endIdx);
     const maxIdx = Math.max(startIdx, endIdx);
     const selectedWeeks = classData.weeks.slice(minIdx, maxIdx + 1);
 
-    let csvContent = "\uFEFF"; // BOM for Excel
+    let csvContent = "\uFEFF"; // BOM 用於 Excel 繁體中文無簡體/亂碼
+    csvContent += `班級：,${db.currentClass},統計區間：,${startWk} 至 ${endWk}\n\n`;
 
-    // 學生資料表
+    // 學生數據表
     let headers = ["姓名", "組別"];
-    if (chkScores) {
-      headers.push(`個人積分(${startWk}~${endWk})`, `小組積分(${startWk}~${endWk})`);
-    }
-    if (chkRangeAbsent) {
-      headers.push(`區間缺席次數(${startWk}~${endWk})`, `區間缺席週次細節`);
-    }
-    if (chkTotalAbsent) {
-      headers.push("全學期總缺席次數", "全學期缺席週次細節");
-    }
+    if (chkScores) { headers.push("區間個人積分", "區間小組積分"); }
+    if (chkRangeAbsent) { headers.push("區間缺席次數", "區間缺席週次"); }
+    if (chkTotalAbsent) { headers.push("總缺席次數", "總缺席週次"); }
 
     csvContent += headers.join(",") + "\n";
 
     classData.students.forEach(s => {
-      const groupNum = s.seatIndex !== null ? (s.seatIndex % 6) + 1 : "未分配";
-      let row = [`"${s.name}"`, `"${groupNum !== '未分配' ? '第' + groupNum + '組' : '未分配'}"`];
+      const groupNum = s.seatIndex !== null && s.seatIndex !== undefined ? (s.seatIndex % 6) + 1 : "未分配";
+      let row = [`"${s.name}"`, `"${groupNum !== '未分配' ? '第 ' + groupNum + ' 組' : '未分配'}"`];
 
-      let rangePersonal = 0;
-      let rangeGroup = 0;
+      let rangePersonalScore = 0;
       if (s.scoresByWeek) {
-        selectedWeeks.forEach(w => rangePersonal += (s.scoresByWeek[w] || 0));
+        selectedWeeks.forEach(wk => rangePersonalScore += (s.scoresByWeek[wk] || 0));
       }
-      if (groupNum !== '未分配') {
-        selectedWeeks.forEach(w => {
-          if (classData.groupScoresByWeek[w]) rangeGroup += (classData.groupScoresByWeek[w][groupNum] || 0);
+
+      let rangeGroupScore = 0;
+      if (groupNum !== "未分配") {
+        selectedWeeks.forEach(wk => {
+          if (classData.groupScoresByWeek[wk]) rangeGroupScore += (classData.groupScoresByWeek[wk][groupNum] || 0);
         });
       }
 
-      if (chkScores) {
-        row.push(rangePersonal, groupNum !== '未分配' ? rangeGroup : 0);
-      }
-
-      let rangeAbsent = [];
-      let totalAbsent = [];
+      let rangeAbsentWeeks = [];
+      let totalAbsentWeeks = [];
       if (s.attendance) {
-        Object.entries(s.attendance).forEach(([w, st]) => {
-          if (st === '缺席') {
-            totalAbsent.push(w);
-            if (selectedWeeks.includes(w)) rangeAbsent.push(w);
+        Object.entries(s.attendance).forEach(([wk, status]) => {
+          if (status === '缺席') {
+            totalAbsentWeeks.push(wk);
+            if (selectedWeeks.includes(wk)) rangeAbsentWeeks.push(wk);
           }
         });
       }
 
-      if (chkRangeAbsent) {
-        row.push(rangeAbsent.length, `"${rangeAbsent.join('; ')}"`);
-      }
-      if (chkTotalAbsent) {
-        row.push(totalAbsent.length, `"${totalAbsent.join('; ')}"`);
-      }
+      if (chkScores) { row.push(rangePersonalScore, groupNum !== "未分配" ? rangeGroupScore : 0); }
+      if (chkRangeAbsent) { row.push(rangeAbsentWeeks.length, `"${rangeAbsentWeeks.join('; ')}"`); }
+      if (chkTotalAbsent) { row.push(totalAbsentWeeks.length, `"${totalAbsentWeeks.join('; ')}"`); }
 
       csvContent += row.join(",") + "\n";
     });
 
-    // 歷程紀錄表
-    if (chkLogs) {
-      csvContent += "\n\n--- 操作歷程紀錄 ---\n";
-      csvContent += "時間,週次,詳細動作\n";
+    if (chkLogs && classData.logs) {
+      csvContent += "\n\n操作歷程紀錄\n時間,週次,動作說明\n";
       classData.logs.forEach(l => {
         csvContent += `"${l.timestamp}","${l.week}","${l.text}"\n`;
       });
     }
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `${db.currentClass}_統計與歷程報表.csv`);
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", `${db.currentClass}_統計成績表.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
     closeModal('export-modal');
   }
 
-// ==========================================
-  // ☁️ Google Cloud Drive API 雙向同步邏輯 (防錯與完整連動版)
+  function executeClear(type) {
+    const classData = getCurrentClassObj();
+    if (type === 'reset_scores') {
+      classData.groupScoresByWeek = {};
+      classData.students.forEach(s => {
+        s.scoresByWeek = {};
+        s.attendance = {};
+      });
+      addLog("重設全班成績與出缺席紀錄");
+    } else if (type === 'clear_all') {
+      classData.students = [];
+      classData.groupScoresByWeek = {};
+      classData.logs = [];
+      addLog("清空全班學生與座位資料");
+    }
+    saveStorage();
+    closeModal('clear-modal');
+    renderAll();
+  }
+
+  // ==========================================
+  // ☁️ Google Cloud Drive API 雙向同步邏輯 (防重複宣告修復版)
   // ==========================================
   CLIENT_ID = '525400214155-mgtf06889n43d654o67o70gg1rhtp3co.apps.googleusercontent.com';
   API_KEY = 'AIzaSyBRxlZDQkDFYNAU3DSdejJW6BuyAMTY_nI';
@@ -1154,11 +1115,10 @@
     }
   };
 
-  // 1. 上傳備份到 Google Drive
   async function uploadToDrive(silent = false) {
     try {
       if (typeof gapi === 'undefined' || !gapi.client || !gapi.client.getToken()) {
-        if (!silent) alert('請先點擊「🔑 登入 Google 雲端」完成授權喔！');
+        if (!silent) alert('請先點擊「🔑 登入 / 載入雲端」完成 Google 授權喔！');
         return;
       }
       const accessToken = gapi.client.getToken().access_token;
@@ -1191,7 +1151,7 @@
       });
 
       if (res.ok && !silent) {
-        alert('☁️ 資料已成功同步至 Google 雲端！');
+        alert('☁️ 資料已成功同步備份至 Google 雲端！');
       }
     } catch (err) {
       console.error('Upload Error:', err);
@@ -1199,7 +1159,6 @@
     }
   }
 
-  // 2. 從 Google Drive 下載備份並覆蓋/同步
   async function downloadFromDrive() {
     try {
       if (typeof gapi === 'undefined' || !gapi.client || !gapi.client.getToken()) return;
@@ -1212,7 +1171,7 @@
 
       if (searchData.files && searchData.files.length > 0) {
         const fileId = searchData.files[0].id;
-        const fileRes = me = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+        const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
           headers: { 'Authorization': 'Bearer ' + accessToken }
         });
         const cloudDataText = await fileRes.text();
@@ -1223,7 +1182,6 @@
           return;
         }
       }
-      // 雲端無檔案時，將電腦現有資料備份上去
       await uploadToDrive(false);
     } catch (err) {
       console.error('Download Error:', err);
@@ -1231,7 +1189,6 @@
     }
   }
 
-  // 3. 點擊「登入 Google 雲端」觸發
   function handleAuthClick() {
     if (!tokenClient) {
       alert('Google 服務載入中，請稍後再試！');
@@ -1251,7 +1208,7 @@
   }
 
   window.onload = function() {
-    if (typeof init === 'function') init();
+    init();
   };
 </script>
 </body>
