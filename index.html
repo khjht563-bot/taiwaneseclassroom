@@ -15,7 +15,7 @@
       --bg-color: #f7f5f0;           /* 暖燕麥色背景 */
       --card-bg: #ffffff;            /* 純白卡片 */
       --text-main: #4a403a;          /* 暖深棕色文字 */
-      --text-muted: #8c827a;         /* 莫蘭迪灰棕 */
+      --text-muted: #8c827a;          /* 莫蘭迪灰棕 */
       --border-color: #e6e1da;       /* 柔和邊框 */
       --accent-green: #7d9688;       /* 抹茶青綠 */
       --accent-green-light: #f0f4f1; 
@@ -244,6 +244,73 @@
     .log-time { color: var(--text-muted); font-size: 12px; margin-right: 4px; }
 
     .danger-zone { border: 1px solid #f5c4c0; background: var(--accent-red-light); padding: 10px; border-radius: var(--radius-sm); margin-top: 8px; }
+
+    /* ========================================================= */
+    /* 手機/小螢幕專用：壓縮座位卡片高度與邊距，實現一頁全覽 */
+    /* ========================================================= */
+    @media screen and (max-height: 600px), screen and (max-width: 768px) {
+      body {
+        padding: 4px;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 2px 0 6px 0;
+      }
+      .panel {
+        padding: 4px 8px;
+        margin-bottom: 6px;
+      }
+      
+      /* 縮小網格與行距 */
+      .grid-container, .group-headers {
+        gap: 3px !important;
+      }
+
+      /* 頂部組別標頭高度壓縮 */
+      .group-card {
+        padding: 2px;
+      }
+      .group-card h4 {
+        font-size: 12px;
+      }
+      .group-score-badge {
+        font-size: 11px;
+      }
+      .group-btn-box button {
+        height: 18px;
+        padding: 0 3px;
+        font-size: 10px;
+      }
+
+      /* 座位外框與學生卡片高度調整 */
+      .seat-slot {
+        height: 30px !important; /* 將原本 54px 壓縮為 30px */
+        padding: 1px;
+      }
+
+      .student-card {
+        padding: 1px 3px !important;
+        border-radius: 4px;
+      }
+
+      .card-name {
+        font-size: 11px !important; /* 字體微調避免跑版 */
+      }
+
+      .badge-personal {
+        font-size: 10.5px !important;
+      }
+      .badge-absent {
+        font-size: 10px !important;
+      }
+
+      .podium {
+        padding: 3px;
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        margin-top: 2px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -750,537 +817,10 @@
         </td>
       `;
       tbody.appendChild(tr);
-
-      const card = document.createElement('div');
-      card.className = 'stat-card-item';
-      card.innerHTML = `
-        <div class="stat-card-header">
-          <span class="stat-card-name">${s.name}</span>
-          <span class="stat-card-group">${groupNum !== '-' ? '第 ' + groupNum + ' 組' : '未分配'}</span>
-        </div>
-        <div class="stat-card-row">
-          <span>個人積分:</span>
-          <b style="color: var(--accent-blue);">${rangePersonalScore} 分</b>
-        </div>
-        <div class="stat-card-row">
-          <span>小組積分:</span>
-          <b style="color: var(--accent-green);">${groupNum !== '-' ? rangeGroupScore + ' 分' : '-'}</b>
-        </div>
-        <div class="stat-card-row">
-          <span>區間/總缺席:</span>
-          <span class="clickable-absent" style="color: ${rangeAbsentWeeks.length > 0 ? 'var(--accent-red)' : 'var(--text-muted)'};" onclick="showAbsentDetails('${s.id}', '${startWk}', '${endWk}')">
-            ${rangeAbsentWeeks.length} / ${totalAbsentWeeks.length} 次
-          </span>
-        </div>
-      `;
-      cardsGrid.appendChild(card);
     });
   }
 
-  function showAbsentDetails(studentId, startWk, endWk) {
-    const classData = getCurrentClassObj();
-    const student = classData.students.find(s => s.id === studentId);
-    if (!student) return;
-
-    document.getElementById('absent-detail-name').innerText = `📌 ${student.name} - 缺席細節`;
-
-    const startIdx = classData.weeks.indexOf(startWk);
-    const endIdx = classData.weeks.indexOf(endWk);
-    const minIdx = Math.min(startIdx, endIdx);
-    const maxIdx = Math.max(startIdx, endIdx);
-    const selectedWeeks = classData.weeks.slice(minIdx, maxIdx + 1);
-
-    let rangeAbsentWeeks = [];
-    let allAbsentWeeks = [];
-
-    if (student.attendance) {
-      Object.entries(student.attendance).forEach(([wk, status]) => {
-        if (status === '缺席') {
-          allAbsentWeeks.push(wk);
-          if (selectedWeeks.includes(wk)) {
-            rangeAbsentWeeks.push(wk);
-          }
-        }
-      });
-    }
-
-    document.getElementById('absent-range-weeks').innerText = 
-      rangeAbsentWeeks.length > 0 ? rangeAbsentWeeks.join('、 ') : '（區間內無缺席紀錄）';
-
-    document.getElementById('absent-all-weeks').innerText = 
-      allAbsentWeeks.length > 0 ? allAbsentWeeks.join('、 ') : '（全學期無缺席紀錄）';
-
-    document.getElementById('absent-details-modal').style.display = 'flex';
-  }
-
-  function allowDrop(e) {
-    e.preventDefault();
-    if (e.currentTarget.classList.contains('seat-slot')) {
-      e.currentTarget.classList.add('drag-over');
-    }
-  }
-
-  function handleDragLeave(e) {
-    if (e.currentTarget.classList.contains('seat-slot')) {
-      e.currentTarget.classList.remove('drag-over');
-    }
-  }
-
-  function dropToSeat(e, targetSeatIndex) {
-    e.preventDefault();
-    e.currentTarget.classList.remove('drag-over');
-    clearScoredStatus();
-    const classData = getCurrentClassObj();
-    const student = classData.students.find(s => s.id === draggedStudentId);
-    
-    if (student) {
-      const existingStudent = classData.students.find(s => s.seatIndex === targetSeatIndex);
-      if (existingStudent) existingStudent.seatIndex = student.seatIndex;
-      
-      student.seatIndex = targetSeatIndex;
-      addLog(`移動學生 [${student.name}] 至 第 ${(targetSeatIndex % 6) + 1} 組`);
-      saveStorage();
-      renderAll();
-    }
-  }
-
-  function dropToPool(e) {
-    e.preventDefault();
-    clearScoredStatus();
-    const classData = getCurrentClassObj();
-    const student = classData.students.find(s => s.id === draggedStudentId);
-    if (student && student.seatIndex !== null) {
-      addLog(`將學生 [${student.name}] 移回待分配區`);
-      student.seatIndex = null;
-      saveStorage();
-      renderAll();
-    }
-  }
-
-  function adjustGroupScore(groupNum, delta) {
-    clearScoredStatus();
-    const classData = getCurrentClassObj();
-    if (!classData.groupScoresByWeek[db.currentWeek]) {
-      classData.groupScoresByWeek[db.currentWeek] = {};
-    }
-    const currentScore = classData.groupScoresByWeek[db.currentWeek][groupNum] || 0;
-    const newScore = currentScore + delta;
-    classData.groupScoresByWeek[db.currentWeek][groupNum] = newScore;
-
-    addLog(`第 ${groupNum} 組 ${delta > 0 ? '加' : '扣'} ${Math.abs(delta)} 分 (目前 ${newScore} 分)`);
-    saveStorage();
-    renderGroupHeaders();
-    renderStatsTable();
-  }
-
-  function openStudentModal(studentId) {
-    activeStudentId = studentId;
-    const classData = getCurrentClassObj();
-    const student = classData.students.find(s => s.id === studentId);
-    if (!student) return;
-
-    document.getElementById('modal-student-name').innerText = student.name;
-    const groupNum = student.seatIndex !== null && student.seatIndex !== undefined ? (student.seatIndex % 6) + 1 : "未分配";
-    document.getElementById('modal-student-group').innerText = groupNum !== "未分配" ? `第 ${groupNum} 組` : "未分配組別";
-    
-    const weekScore = getStudentPersonalScore(student, db.currentWeek);
-    document.getElementById('modal-student-score').innerText = weekScore;
-
-    const isAbsent = student.attendance && student.attendance[db.currentWeek] === '缺席';
-    const absentBtn = document.getElementById('modal-absent-btn');
-    if (isAbsent) {
-      absentBtn.innerText = "取消缺席";
-      absentBtn.className = "btn-red";
-    } else {
-      absentBtn.innerText = "標記缺席";
-      absentBtn.className = "btn-blue";
-    }
-
-    document.getElementById('student-modal').style.display = 'flex';
-  }
-
-  /* 修改：完成加扣分動作後自動關閉彈出視窗 (closeModal('student-modal')) */
-  function adjustPersonalScore(delta, reason = '') {
-    if (!activeStudentId) return;
-    const classData = getCurrentClassObj();
-    const student = classData.students.find(s => s.id === activeStudentId);
-    if (!student) return;
-
-    if (!student.scoresByWeek) student.scoresByWeek = {};
-    const curScore = Number(student.scoresByWeek[db.currentWeek] || 0);
-    const numDelta = Number(delta);
-    
-    const newScore = curScore + numDelta;
-    student.scoresByWeek[db.currentWeek] = newScore;
-
-    lastScoredStudentId = student.id;
-    addLog(`[${student.name}] ${reason ? reason + ' ' : ''}${numDelta > 0 ? '+' : ''}${numDelta} 分 (本週 ${newScore} 分)`);
-    
-    saveStorage();
-    document.getElementById('modal-student-score').innerText = newScore;
-    renderAll();
-    closeModal('student-modal'); // 動作完成後自動離開視窗
-  }
-
-  function toggleAbsent() {
-    if (!activeStudentId) return;
-    const classData = getCurrentClassObj();
-    const student = classData.students.find(s => s.id === activeStudentId);
-    if (!student) return;
-
-    if (!student.attendance) student.attendance = {};
-    const isAbsent = student.attendance[db.currentWeek] === '缺席';
-
-    if (isAbsent) {
-      delete student.attendance[db.currentWeek];
-      addLog(`[${student.name}] 取消 ${db.currentWeek} 缺席標記`);
-    } else {
-      student.attendance[db.currentWeek] = '缺席';
-      addLog(`[${student.name}] 標記 ${db.currentWeek} 缺席`);
-    }
-
-    saveStorage();
-    closeModal('student-modal');
-    renderAll();
-  }
-
-  function switchClass() {
-    clearScoredStatus();
-    db.currentClass = document.getElementById('class-select').value;
-    saveStorage();
-    renderSelectors();
-    renderAll();
-  }
-
-  function switchWeek() {
-    clearScoredStatus();
-    db.currentWeek = document.getElementById('week-select').value;
-    saveStorage();
-    renderAll();
-  }
-
-  function addClassPrompt() {
-    const name = prompt("請輸入新班級名稱：", "三年二班");
-    if (name && name.trim()) {
-      const trimmed = name.trim();
-      if (db.classes[trimmed]) {
-        alert("班級名稱已存在！");
-        return;
-      }
-      db.classes[trimmed] = {
-        weeks: generateDefaultWeeks(),
-        students: [],
-        groupScoresByWeek: {},
-        logs: []
-      };
-      db.currentClass = trimmed;
-      saveStorage();
-      renderSelectors();
-      renderAll();
-    }
-  }
-
-  function deleteClassPrompt() {
-    const keys = Object.keys(db.classes);
-    if (keys.length <= 1) {
-      alert("至少需保留一個班級！");
-      return;
-    }
-    if (confirm(`確定要刪除「${db.currentClass}」及其所有學生資料嗎？此動作無法復原！`)) {
-      delete db.classes[db.currentClass];
-      db.currentClass = Object.keys(db.classes)[0];
-      saveStorage();
-      renderSelectors();
-      renderAll();
-    }
-  }
-
-  function openImportModal() { document.getElementById('import-modal').style.display = 'flex'; }
-  function openLogModal() {
-    const logList = document.getElementById('log-list');
-    logList.innerHTML = '';
-    const classData = getCurrentClassObj();
-    if (classData && classData.logs) {
-      classData.logs.forEach(item => {
-        const li = document.createElement('li');
-        li.className = 'log-item';
-        li.innerHTML = `<span class="log-time">[${item.timestamp}] (${item.week})</span> ${item.text}`;
-        logList.appendChild(li);
-      });
-    }
-    document.getElementById('log-modal').style.display = 'flex';
-  }
-  function openExportModal() { document.getElementById('export-modal').style.display = 'flex'; }
-  function openClearModal() { document.getElementById('clear-modal').style.display = 'flex'; }
-  
-  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-  
-  /* 點擊半透明背景空白處即可關閉視窗 */
-  function closeModalOnOutsideClick(event, id) {
-    if (event.target.id === id) {
-      closeModal(id);
-    }
-  }
-
-  function processImport() {
-    const text = document.getElementById('import-text').value;
-    if (!text.trim()) return;
-    const names = text.split('\n').map(n => n.trim()).filter(n => n.length > 0);
-    const classData = getCurrentClassObj();
-
-    names.forEach(name => {
-      classData.students.push({
-        id: 's_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-        name: name,
-        seatIndex: null,
-        scoresByWeek: {},
-        attendance: {}
-      });
-    });
-
-    addLog(`匯入 ${names.length} 名學生`);
-    saveStorage();
-    document.getElementById('import-text').value = '';
-    closeModal('import-modal');
-    renderAll();
-  }
-
-  function processExport() {
-    const chkScores = document.getElementById('chk-scores').checked;
-    const chkRangeAbsent = document.getElementById('chk-range-absent').checked;
-    const chkTotalAbsent = document.getElementById('chk-total-absent').checked;
-    const chkLogs = document.getElementById('chk-logs').checked;
-
-    const classData = getCurrentClassObj();
-    const startWk = document.getElementById('stats-start-week').value || db.currentWeek;
-    const endWk = document.getElementById('stats-end-week').value || db.currentWeek;
-    
-    const startIdx = classData.weeks.indexOf(startWk);
-    const endIdx = classData.weeks.indexOf(endWk);
-    const minIdx = Math.min(startIdx, endIdx);
-    const maxIdx = Math.max(startIdx, endIdx);
-    const selectedWeeks = classData.weeks.slice(minIdx, maxIdx + 1);
-
-    let csvContent = "\uFEFF";
-    csvContent += `班級：,${db.currentClass},統計區間：,${startWk} 至 ${endWk}\n\n`;
-
-    let headers = ["姓名", "組別"];
-    if (chkScores) { headers.push("區間個人積分", "區間小組積分"); }
-    if (chkRangeAbsent) { headers.push("區間缺席次數", "區間缺席週次"); }
-    if (chkTotalAbsent) { headers.push("總缺席次數", "總缺席週次"); }
-
-    csvContent += headers.join(",") + "\n";
-
-    classData.students.forEach(s => {
-      const groupNum = s.seatIndex !== null && s.seatIndex !== undefined ? (s.seatIndex % 6) + 1 : "未分配";
-      let row = [`"${s.name}"`, `"${groupNum !== '未分配' ? '第 ' + groupNum + ' 組' : '未分配'}"`];
-
-      let rangePersonalScore = 0;
-      if (s.scoresByWeek) {
-        selectedWeeks.forEach(wk => rangePersonalScore += (s.scoresByWeek[wk] || 0));
-      }
-
-      let rangeGroupScore = 0;
-      if (groupNum !== "未分配") {
-        selectedWeeks.forEach(wk => {
-          if (classData.groupScoresByWeek[wk]) rangeGroupScore += (classData.groupScoresByWeek[wk][groupNum] || 0);
-        });
-      }
-
-      let rangeAbsentWeeks = [];
-      let totalAbsentWeeks = [];
-      if (s.attendance) {
-        Object.entries(s.attendance).forEach(([wk, status]) => {
-          if (status === '缺席') {
-            totalAbsentWeeks.push(wk);
-            if (selectedWeeks.includes(wk)) rangeAbsentWeeks.push(wk);
-          }
-        });
-      }
-
-      if (chkScores) { row.push(rangePersonalScore, groupNum !== "未分配" ? rangeGroupScore : 0); }
-      if (chkRangeAbsent) { row.push(rangeAbsentWeeks.length, `"${rangeAbsentWeeks.join('; ')}"`); }
-      if (chkTotalAbsent) { row.push(totalAbsentWeeks.length, `"${totalAbsentWeeks.join('; ')}"`); }
-
-      csvContent += row.join(",") + "\n";
-    });
-
-    if (chkLogs && classData.logs) {
-      csvContent += "\n\n操作歷程紀錄\n時間,週次,動作說明\n";
-      classData.logs.forEach(l => {
-        csvContent += `"${l.timestamp}","${l.week}","${l.text}"\n`;
-      });
-    }
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", `${db.currentClass}_統計成績表.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    closeModal('export-modal');
-  }
-
-  function executeClear(type) {
-    const classData = getCurrentClassObj();
-    if (type === 'reset_scores') {
-      classData.groupScoresByWeek = {};
-      classData.students.forEach(s => {
-        s.scoresByWeek = {};
-        s.attendance = {};
-      });
-      addLog("重設全班成績與出缺席紀錄");
-    } else if (type === 'clear_all') {
-      classData.students = [];
-      classData.groupScoresByWeek = {};
-      classData.logs = [];
-      addLog("清空全班學生與座位資料");
-    }
-    saveStorage();
-    closeModal('clear-modal');
-    renderAll();
-  }
-
-  // Google Cloud Drive API
-  CLIENT_ID = '525400214155-mgtf06889n43d654o67o70gg1rhtp3co.apps.googleusercontent.com';
-  API_KEY = 'AIzaSyBRxlZDQkDFYNAU3DSdejJW6BuyAMTY_nI';
-  
-  const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
-  const SCOPES = 'https://www.googleapis.com/auth/drive.file';
-  const BACKUP_FILE_NAME = 'taiwanese_classroom_db.json';
-
-  let tokenClient = null;
-
-  function updateCloudBadge(isLoggedIn) {
-    const badge = document.getElementById('cloud-status-badge');
-    if (isLoggedIn) {
-      badge.innerText = '☁️ 自動備份：開啟';
-      badge.classList.add('active');
-    } else {
-      badge.innerText = '☁️ 未登入同步';
-      badge.classList.remove('active');
-    }
-  }
-
-  window.gapiLoaded = function() {
-    if (typeof gapi !== 'undefined') {
-      gapi.load('client', async () => {
-        try {
-          await gapi.client.init({
-            apiKey: API_KEY,
-            discoveryDocs: [DISCOVERY_DOC],
-          });
-        } catch (e) { console.error("GAPI Init Error:", e); }
-      });
-    }
-  };
-
-  window.gisLoaded = function() {
-    if (typeof google !== 'undefined' && google.accounts) {
-      tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: '',
-      });
-    }
-  };
-
-  async function uploadToDrive(silent = false) {
-    try {
-      if (typeof gapi === 'undefined' || !gapi.client || !gapi.client.getToken()) {
-        updateCloudBadge(false);
-        return;
-      }
-      updateCloudBadge(true);
-      
-      const accessToken = gapi.client.getToken().access_token;
-      const fileContent = localStorage.getItem('smart_classroom_db') || (typeof db !== 'undefined' ? JSON.stringify(db) : '{}');
-      const file = new Blob([fileContent], { type: 'application/json' });
-      const metadata = { name: BACKUP_FILE_NAME, mimeType: 'application/json' };
-
-      const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILE_NAME}' and trashed=false`, {
-        headers: { 'Authorization': 'Bearer ' + accessToken }
-      });
-      const searchData = await searchRes.json();
-
-      let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-      let method = 'POST';
-
-      if (searchData.files && searchData.files.length > 0) {
-        const fileId = searchData.files[0].id;
-        url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`;
-        method = 'PATCH';
-      }
-
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-      form.append('file', file);
-
-      await fetch(url, {
-        method: method,
-        headers: { 'Authorization': 'Bearer ' + accessToken },
-        body: form,
-      });
-    } catch (err) {
-      console.error('Auto Backup Error:', err);
-    }
-  }
-
-  async function downloadFromDrive() {
-    try {
-      if (typeof gapi === 'undefined' || !gapi.client || !gapi.client.getToken()) return;
-      const accessToken = gapi.client.getToken().access_token;
-
-      const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILE_NAME}' and trashed=false`, {
-        headers: { 'Authorization': 'Bearer ' + accessToken }
-      });
-      const searchData = await searchRes.json();
-
-      if (searchData.files && searchData.files.length > 0) {
-        const fileId = searchData.files[0].id;
-        const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-          headers: { 'Authorization': 'Bearer ' + accessToken }
-        });
-        const cloudDataText = await fileRes.text();
-        if (cloudDataText && cloudDataText.trim().startsWith('{')) {
-          localStorage.setItem('smart_classroom_db', cloudDataText);
-          if (typeof init === 'function') init();
-          updateCloudBadge(true);
-          alert('📥 已成功連線 Google 雲端！系統此後將「自動實時備份」您的所有修改。');
-          return;
-        }
-      }
-      await uploadToDrive(true);
-      updateCloudBadge(true);
-    } catch (err) {
-      console.error('Download Error:', err);
-      alert('下載雲端資料失敗：' + err.message);
-    }
-  }
-
-  function handleAuthClick() {
-    if (!tokenClient) {
-      alert('Google 服務載入中，請稍後再試！');
-      return;
-    }
-
-    tokenClient.callback = async (resp) => {
-      if (resp.error !== undefined) throw (resp);
-      await downloadFromDrive();
-    };
-
-    if (gapi.client.getToken() === null) {
-      tokenClient.requestAccessToken({prompt: 'consent'});
-    } else {
-      tokenClient.requestAccessToken({prompt: ''});
-    }
-  }
-
-  window.onload = function() {
-    init();
-  };
+  window.onload = init;
 </script>
 </body>
 </html>
