@@ -56,13 +56,20 @@
       padding: 8px 4px; font-size: 14px; font-weight: bold; border-radius: 6px;
     }
 
+    /* 雲端狀態提示 */
+    .cloud-status {
+      font-size: 12px; font-weight: bold; padding: 3px 6px; border-radius: 4px;
+      background-color: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;
+    }
+    .cloud-status.active { background-color: #dcfce7; color: #15803d; border-color: #86efac; }
+
     /* 主要版面佈局 */
     .main-layout { display: flex; flex-direction: column; gap: 8px; }
     @media (min-width: 768px) {
       .main-layout { display: grid; grid-template-columns: 240px 1fr; }
     }
     
-    /* 待分配學生庫：改用強大網格排版，均勻兩兩並排 */
+    /* 待分配學生庫：網格排版 */
     .unassigned-pool {
       background: white; border-radius: 10px; padding: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: 100%;
@@ -84,7 +91,7 @@
     /* 座位區 */
     .classroom-area { display: flex; flex-direction: column; gap: 4px; }
 
-    /* 小組標頭：同一橫排排版 */
+    /* 小組標頭 */
     .group-headers { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
     .group-card {
       background: #e2e8f0; border-top: 3px solid #3b82f6; border-radius: 6px;
@@ -109,7 +116,7 @@
     }
     .seat-slot.drag-over { background: #e0f2fe; border-color: #38bdf8; }
 
-    /* 學生卡片：完整顯示全名 */
+    /* 學生卡片 */
     .student-card {
       width: 100%; height: 100%; background: white; border: 1.5px solid #94a3b8; border-radius: 5px;
       padding: 2px 4px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
@@ -180,7 +187,6 @@
       .podium { padding: 2px; font-size: 11px; margin-top: 2px; }
       .stats-section { margin-top: 4px; padding: 6px; }
       
-      /* 橫屏彈出視窗高度優化 */
       .modal-content {
         max-height: 95vh !important;
         overflow-y: auto !important;
@@ -257,9 +263,10 @@
       <button class="btn-purple" onclick="openLogModal()">📜 歷程</button>
       <button class="btn-green" onclick="openExportModal()">📥 匯出</button>
       <button class="btn-red" onclick="openClearModal()">🗑️ 清除</button>
-      <!-- 雙按鈕：雲端載入與手動備份 -->
+      
+      <!-- 登入與雲端備份燈號 -->
       <button type="button" class="btn-blue" onclick="handleAuthClick()">🔑 登入 / 載入雲端</button>
-      <button type="button" class="btn-green" onclick="uploadToDrive(false)">☁️ 手動備份至雲端</button>
+      <span class="cloud-status" id="cloud-status-badge">☁️ 未登入同步</span>
     </div>
   </div>
 
@@ -330,7 +337,7 @@
   </div>
 </div>
 
-<!-- Modal 2: 個人學生操作（已移除底部關閉視窗按鈕） -->
+<!-- Modal 2: 個人學生操作 -->
 <div class="modal" id="student-modal" onclick="closeModalOnOutsideClick(event, 'student-modal')">
   <div class="modal-content" onclick="event.stopPropagation()">
     <div class="student-header-box">
@@ -512,10 +519,11 @@
     renderAll();
   }
 
+  /* 本地儲存 + 背景自動無感同步雲端 */
   function saveStorage() {
     localStorage.setItem('smart_classroom_db', JSON.stringify(db));
     if (typeof gapi !== 'undefined' && gapi.client && gapi.client.getToken() !== null) {
-      uploadToDrive(true);
+      uploadToDrive(true); // silent = true 靜默上傳
     }
   }
 
@@ -881,7 +889,6 @@
     document.getElementById('student-modal').style.display = 'flex';
   }
 
-  /* 動作後自動關閉視窗 */
   function adjustPersonalScore(delta, reason = '') {
     if (!activeStudentId) return;
     const classData = getCurrentClassObj();
@@ -924,7 +931,6 @@
     renderAll();
   }
 
-  // 班級與週次切換
   function switchClass() {
     clearScoredStatus();
     db.currentClass = document.getElementById('class-select').value;
@@ -976,7 +982,6 @@
     }
   }
 
-  // Modal 功能與匯入/匯出
   function openImportModal() { document.getElementById('import-modal').style.display = 'flex'; }
   function openLogModal() {
     const logList = document.getElementById('log-list');
@@ -997,7 +1002,6 @@
   
   function closeModal(id) { document.getElementById(id).style.display = 'none'; }
   
-  /* 點擊視窗外部自動跳出關閉 */
   function closeModalOnOutsideClick(event, id) {
     if (event.target.id === id) {
       closeModal(id);
@@ -1043,7 +1047,7 @@
     const maxIdx = Math.max(startIdx, endIdx);
     const selectedWeeks = classData.weeks.slice(minIdx, maxIdx + 1);
 
-    let csvContent = "\uFEFF"; // BOM 用於 Excel 繁體中文無亂碼
+    let csvContent = "\uFEFF";
     csvContent += `班級：,${db.currentClass},統計區間：,${startWk} 至 ${endWk}\n\n`;
 
     let headers = ["姓名", "組別"];
@@ -1126,7 +1130,7 @@
   }
 
   // ==========================================
-  // ☁️ Google Cloud Drive API 雙向同步邏輯
+  // ☁️ Google Cloud Drive API 自動同步與狀態提示
   // ==========================================
   CLIENT_ID = '525400214155-mgtf06889n43d654o67o70gg1rhtp3co.apps.googleusercontent.com';
   API_KEY = 'AIzaSyBRxlZDQkDFYNAU3DSdejJW6BuyAMTY_nI';
@@ -1136,6 +1140,17 @@
   const BACKUP_FILE_NAME = 'taiwanese_classroom_db.json';
 
   let tokenClient = null;
+
+  function updateCloudBadge(isLoggedIn) {
+    const badge = document.getElementById('cloud-status-badge');
+    if (isLoggedIn) {
+      badge.innerText = '☁️ 自動備份：開啟';
+      badge.classList.add('active');
+    } else {
+      badge.innerText = '☁️ 未登入同步';
+      badge.classList.remove('active');
+    }
+  }
 
   window.gapiLoaded = function() {
     if (typeof gapi !== 'undefined') {
@@ -1163,9 +1178,11 @@
   async function uploadToDrive(silent = false) {
     try {
       if (typeof gapi === 'undefined' || !gapi.client || !gapi.client.getToken()) {
-        if (!silent) alert('請先點擊「🔑 登入 / 載入雲端」完成 Google 授權喔！');
+        updateCloudBadge(false);
         return;
       }
+      updateCloudBadge(true);
+      
       const accessToken = gapi.client.getToken().access_token;
       const fileContent = localStorage.getItem('smart_classroom_db') || (typeof db !== 'undefined' ? JSON.stringify(db) : '{}');
       const file = new Blob([fileContent], { type: 'application/json' });
@@ -1189,18 +1206,13 @@
       form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
       form.append('file', file);
 
-      const res = await fetch(url, {
+      await fetch(url, {
         method: method,
         headers: { 'Authorization': 'Bearer ' + accessToken },
         body: form,
       });
-
-      if (res.ok && !silent) {
-        alert('☁️ 資料已成功同步備份至 Google 雲端！');
-      }
     } catch (err) {
-      console.error('Upload Error:', err);
-      if (!silent) alert('備份出錯：' + err.message);
+      console.error('Auto Backup Error:', err);
     }
   }
 
@@ -1223,11 +1235,13 @@
         if (cloudDataText && cloudDataText.trim().startsWith('{')) {
           localStorage.setItem('smart_classroom_db', cloudDataText);
           if (typeof init === 'function') init();
-          alert('📥 已成功從 Google 雲端載入最新同步資料！');
+          updateCloudBadge(true);
+          alert('📥 已成功連線 Google 雲端！系統此後將「自動實時備份」您的所有修改。');
           return;
         }
       }
-      await uploadToDrive(false);
+      await uploadToDrive(true);
+      updateCloudBadge(true);
     } catch (err) {
       console.error('Download Error:', err);
       alert('下載雲端資料失敗：' + err.message);
