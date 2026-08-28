@@ -43,7 +43,7 @@
     
     .container { max-width: 1250px; margin: 0 auto; }
     
-    /* 頂部控制面板：文青手帳筆記欄風格 */
+    /* 頂部控制面板 */
     .panel {
       background: var(--card-bg); padding: 8px 14px; border-radius: var(--radius-md);
       box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 12px;
@@ -59,7 +59,7 @@
     }
     select:focus, input[type="text"]:focus { border-color: var(--accent-blue); }
 
-    /* 文青手感按鈕 */
+    /* 按鈕樣式 */
     button {
       padding: 6px 11px; border: none; border-radius: var(--radius-sm); cursor: pointer;
       font-weight: 600; font-size: 13px; transition: all 0.2s ease;
@@ -76,7 +76,7 @@
     .btn-dark { background-color: var(--accent-dark); color: white; }
     .btn-gray { background-color: #e0dad3; color: var(--text-main); }
     
-    /* 評分按鈕（柔和網頁質感） */
+    /* 評分按鈕 */
     .btn-soft-green { 
       background-color: var(--accent-green-light); color: var(--accent-green); border: 1px solid #cce0d5; 
       padding: 9px 4px; font-size: 13.5px; font-weight: 600; border-radius: var(--radius-sm);
@@ -86,7 +86,7 @@
       padding: 9px 4px; font-size: 13.5px; font-weight: 600; border-radius: var(--radius-sm);
     }
 
-    /* 雲端狀態手帳標籤 */
+    /* 雲端狀態標籤 */
     .cloud-status {
       font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: var(--radius-sm);
       background-color: #f0eae1; color: var(--text-muted); border: 1px solid var(--border-color);
@@ -100,32 +100,30 @@
       .main-layout { display: grid; grid-template-columns: 240px 1fr; }
     }
     
-    /* 待分配學生庫：強制的 2 欄網格 (兩兩並列) */
+    /* 待分配學生庫：2 欄網格 */
     .unassigned-pool {
       background: var(--card-bg); border-radius: var(--radius-md); padding: 12px;
       box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); width: 100%;
     }
     .pool-list {
       display: grid !important; 
-      grid-template-columns: repeat(2, 1fr) !important; /* 兩兩並列 */
+      grid-template-columns: repeat(2, 1fr) !important;
       gap: 6px; 
       min-height: 50px;
       background: #faf8f5; border: 1.5px dashed var(--border-color); border-radius: var(--radius-sm); padding: 6px;
       width: 100%; align-content: start;
     }
     
-    /* 待分配區學生卡片專屬尺寸與版面樣式 */
     .pool-list .student-card { 
       width: 100% !important; 
       height: 40px !important; 
       padding: 3px 8px !important;
-      justify-content: center !important; /* 文字置中更美觀 */
+      justify-content: center !important;
     }
 
     /* 座位區 */
     .classroom-area { display: flex; flex-direction: column; gap: 6px; }
 
-    /* 小組標頭：質感木質名牌感 */
     .group-headers { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
     .group-card {
       background: var(--card-bg); border-top: 3.5px solid var(--accent-blue); border-radius: var(--radius-sm);
@@ -166,7 +164,7 @@
       font-weight: 600; font-size: 13.5px; color: var(--text-main); 
       line-height: 1.1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1; text-align: left;
     }
-    .pool-list .card-name { text-align: center; } /* 待分配區文字水平置中 */
+    .pool-list .card-name { text-align: center; }
 
     .card-scores { 
       display: flex; align-items: center; justify-content: flex-end; gap: 2px; flex-shrink: 0;
@@ -174,7 +172,6 @@
     .badge-personal { color: var(--accent-blue); font-weight: 700; font-size: 12.5px; }
     .badge-absent { color: var(--accent-red); font-weight: 700; font-size: 11.5px; }
 
-    /* 講桌黑板：文青木紋與沉穩色調 */
     .podium {
       background: var(--accent-dark); color: #f7f5f0; text-align: center; padding: 6px;
       font-weight: 600; border-radius: var(--radius-sm); font-size: 13px; letter-spacing: 3px; margin-top: 4px;
@@ -208,38 +205,9 @@
       .stats-cards-grid { display: grid; }
     }
 
-    /* 手機打橫 (Landscape) 特化設定 */
-    @media screen and (max-width: 930px) and (orientation: landscape) {
-      h1 { font-size: 16px; margin: 2px 0; }
-      body { padding: 4px; }
-      .panel { padding: 4px 8px; margin-bottom: 4px; }
-      .panel button, .panel select { font-size: 11px; padding: 3px 6px; }
-      .control-item { font-size: 12px; }
-      .group-card { padding: 2px; }
-      .group-card h4 { font-size: 12.5px; }
-      .group-score-badge { font-size: 12px; }
-      .group-btn-box button { height: 18px; padding: 0 4px; font-size: 10px; }
-      .seat-slot { height: 38px !important; padding: 1px; }
-      .student-card { padding: 1px 4px; }
-      .card-name { font-size: 12px; }
-      .badge-personal { font-size: 11px; }
-      .podium { padding: 3px; font-size: 11px; margin-top: 2px; }
-      .stats-section { margin-top: 4px; padding: 8px; }
-      
-      .modal-content {
-        max-height: 95vh !important;
-        overflow-y: auto !important;
-        padding: 10px 12px !important;
-      }
-      .btn-soft-green, .btn-soft-red {
-        padding: 5px 3px !important;
-        font-size: 12px !important;
-      }
-    }
-
     .clickable-absent { cursor: pointer; text-decoration: underline; font-weight: 600; }
 
-    /* Modal 彈出卡片手帳質感 */
+    /* Modal 彈出視窗 */
     .modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(74, 64, 58, 0.4); backdrop-filter: blur(2px); justify-content: center; align-items: center; z-index: 1000; padding: 10px;
@@ -302,8 +270,6 @@
       <button class="btn-purple" onclick="openLogModal()">📜 歷程</button>
       <button class="btn-green" onclick="openExportModal()">📥 匯出</button>
       <button class="btn-red" onclick="openClearModal()">🗑️ 清除</button>
-      
-      <!-- 登入與雲端備份燈號 -->
       <button type="button" class="btn-blue" onclick="handleAuthClick()">🔑 登入 / 載入雲端</button>
       <span class="cloud-status" id="cloud-status-badge">☁️ 未登入同步</span>
     </div>
@@ -558,7 +524,6 @@
     renderAll();
   }
 
-  /* 本地儲存 + 背景自動無感同步雲端 */
   function saveStorage() {
     localStorage.setItem('smart_classroom_db', JSON.stringify(db));
     if (typeof gapi !== 'undefined' && gapi.client && gapi.client.getToken() !== null) {
@@ -627,7 +592,7 @@
 
   function getStudentPersonalScore(student, week = null) {
     if (week) {
-      return (student.scoresByWeek && student.scoresByWeek[week]) || 0;
+      return (student.scoresByWeek && student.scoresByWeek[week] !== undefined) ? student.scoresByWeek[week] : 0;
     }
     let total = 0;
     if (student.scoresByWeek) {
@@ -672,7 +637,7 @@
 
       const student = classData.students.find(s => s.seatIndex === i);
       if (student) {
-        slot.appendChild(createStudentCard(student, true)); /* showScores = true */
+        slot.appendChild(createStudentCard(student, true));
       }
 
       grid.appendChild(slot);
@@ -687,11 +652,10 @@
     
     document.getElementById('unassigned-count').innerText = unassigned.length;
     unassigned.forEach(student => {
-      pool.appendChild(createStudentCard(student, false)); /* showScores = false (隱藏分數) */
+      pool.appendChild(createStudentCard(student, false));
     });
   }
 
-  /* 學生名牌卡片（可控制是否顯示右側分數與狀態） */
   function createStudentCard(student, showScores = true) {
     const card = document.createElement('div');
     const isAbsent = student.attendance && student.attendance[db.currentWeek] === '缺席';
@@ -849,7 +813,6 @@
     document.getElementById('absent-details-modal').style.display = 'flex';
   }
 
-  // Drag & Drop
   function allowDrop(e) {
     e.preventDefault();
     if (e.currentTarget.classList.contains('seat-slot')) {
@@ -901,7 +864,7 @@
       classData.groupScoresByWeek[db.currentWeek] = {};
     }
     const currentScore = classData.groupScoresByWeek[db.currentWeek][groupNum] || 0;
-    const newScore = Math.max(0, currentScore + delta);
+    const newScore = currentScore + delta; // 允許為負分或正常扣分
     classData.groupScoresByWeek[db.currentWeek][groupNum] = newScore;
 
     addLog(`第 ${groupNum} 組 ${delta > 0 ? '加' : '扣'} ${Math.abs(delta)} 分 (目前 ${newScore} 分)`);
@@ -936,6 +899,7 @@
     document.getElementById('student-modal').style.display = 'flex';
   }
 
+  /* 核心修復：精確計算扣分與加分，並即時更新 UI */
   function adjustPersonalScore(delta, reason = '') {
     if (!activeStudentId) return;
     const classData = getCurrentClassObj();
@@ -943,17 +907,19 @@
     if (!student) return;
 
     if (!student.scoresByWeek) student.scoresByWeek = {};
-    const curScore = student.scoresByWeek[db.currentWeek] || 0;
-    const newScore = Math.max(0, curScore + delta);
+    const curScore = Number(student.scoresByWeek[db.currentWeek] || 0);
+    const numDelta = Number(delta);
+    
+    // 計算新分數 (取消 Math.max(0, ...) 的硬性歸零限制)
+    const newScore = curScore + numDelta;
     student.scoresByWeek[db.currentWeek] = newScore;
 
     lastScoredStudentId = student.id;
-    addLog(`[${student.name}] ${reason ? reason + ' ' : ''}${delta > 0 ? '+' : ''}${delta} 分 (本週 ${newScore} 分)`);
+    addLog(`[${student.name}] ${reason ? reason + ' ' : ''}${numDelta > 0 ? '+' : ''}${numDelta} 分 (本週 ${newScore} 分)`);
     
     saveStorage();
     document.getElementById('modal-student-score').innerText = newScore;
     renderAll();
-    closeModal('student-modal');
   }
 
   function toggleAbsent() {
@@ -1176,9 +1142,7 @@
     renderAll();
   }
 
-  // ==========================================
-  // ☁️ Google Cloud Drive API 自動同步與狀態提示
-  // ==========================================
+  // Google Cloud Drive API
   CLIENT_ID = '525400214155-mgtf06889n43d654o67o70gg1rhtp3co.apps.googleusercontent.com';
   API_KEY = 'AIzaSyBRxlZDQkDFYNAU3DSdejJW6BuyAMTY_nI';
   
