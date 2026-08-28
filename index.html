@@ -100,23 +100,24 @@
       .main-layout { display: grid; grid-template-columns: 240px 1fr; }
     }
     
-    /* 待分配學生庫：文青托盤風格 */
+    /* 待分配學生庫：多欄排列標籤風格 */
     .unassigned-pool {
       background: var(--card-bg); border-radius: var(--radius-md); padding: 12px;
       box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); width: 100%;
     }
     .pool-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 8px; min-height: 50px;
+      display: flex; flex-wrap: wrap; gap: 8px; min-height: 50px;
       background: #faf8f5; border: 1.5px dashed var(--border-color); border-radius: var(--radius-sm); padding: 8px;
       width: 100%; align-content: flex-start;
     }
+    /* 在待分配區的學生卡片改為彈性邊框標籤 */
     .pool-list .student-card { 
-      width: 100% !important; 
-      max-width: none; 
-      height: 46px; 
-      padding: 4px 8px; 
+      width: auto !important; 
+      min-width: 80px;
+      height: 38px; 
+      padding: 4px 10px; 
+      flex-grow: 1;
+      max-width: 110px;
     }
 
     /* 座位區 */
