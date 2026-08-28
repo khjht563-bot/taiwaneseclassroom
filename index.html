@@ -1217,7 +1217,140 @@
     }
   }
 
-  // 初始化啟動
+// ==========================================
+  // ☁️ Google Cloud Drive API 雙向同步邏輯
+  // ==========================================
+  const CLIENT_ID = '525400214155-mgtf06889n43d654o67o70gg1rhtp3co.apps.googleusercontent.com';
+  const API_KEY = 'AIzaSyBRxlZDQkDFYNAU3DSdejJW6BuyAMTY_nI';
+  const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+  const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+  const BACKUP_FILE_NAME = 'taiwanese_classroom_db.json';
+
+  let tokenClient;
+  let gapiInited = false;
+  let gsisInited = false;
+
+  function gapiLoaded() {
+    gapi.load('client', intializeGapiClient);
+  }
+
+  async function intializeGapiClient() {
+    await gapi.client.init({
+      apiKey: API_KEY,
+      discoveryDocs: [DISCOVERY_DOC],
+    });
+    gapiInited = true;
+  }
+
+  function gisLoaded() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: '',
+    });
+    gsisInited = true;
+  }
+
+  // 1. 上傳備份到 Google Drive
+  async function uploadToDrive(silent = false) {
+    try {
+      const accessToken = gapi.client.getToken()?.access_token;
+      if (!accessToken) return;
+
+      const fileContent = localStorage.getItem('smart_classroom_db') || JSON.stringify(db);
+      const file = new Blob([fileContent], { type: 'application/json' });
+      const metadata = {
+        name: BACKUP_FILE_NAME,
+        mimeType: 'application/json',
+      };
+
+      const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILE_NAME}' and trashed=false`, {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      });
+      const searchData = await searchRes.json();
+
+      let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+      let method = 'POST';
+
+      if (searchData.files && searchData.files.length > 0) {
+        const fileId = searchData.files[0].id;
+        url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`;
+        method = 'PATCH';
+      }
+
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', file);
+
+      const res = await fetch(url, {
+        method: method,
+        headers: { 'Authorization': 'Bearer ' + accessToken },
+        body: form,
+      });
+
+      if (res.ok && !silent) {
+        alert('☁️ 資料已成功同步至 Google 雲端！');
+      }
+    } catch (err) {
+      console.error('Upload Error:', err);
+      if (!silent) alert('備份出錯：' + err.message);
+    }
+  }
+
+  // 2. 從 Google Drive 下載備份並覆蓋/同步
+  async function downloadFromDrive() {
+    try {
+      const accessToken = gapi.client.getToken()?.access_token;
+      if (!accessToken) return;
+
+      const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${BACKUP_FILE_NAME}' and trashed=false`, {
+        headers: { 'Authorization': 'Bearer ' + accessToken }
+      });
+      const searchData = await searchRes.json();
+
+      if (searchData.files && searchData.files.length > 0) {
+        const fileId = searchData.files[0].id;
+        const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+          headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        
+        const cloudDataText = await fileRes.text();
+        if (cloudDataText) {
+          localStorage.setItem('smart_classroom_db', cloudDataText);
+          init();
+          alert('📥 已成功從 Google 雲端載入最新同步資料！');
+          return;
+        }
+      }
+      await uploadToDrive(false);
+    } catch (err) {
+      console.error('Download Error:', err);
+      alert('下載雲端資料失敗：' + err.message);
+    }
+  }
+
+  // 3. 點擊「登入 Google 雲端」按鈕觸發
+  function handleAuthClick() {
+    if (!tokenClient) {
+      alert('Google 服務載入中，請稍微再試一次！');
+      return;
+    }
+
+    tokenClient.callback = async (resp) => {
+      if (resp.error !== undefined) {
+        throw (resp);
+      }
+      await downloadFromDrive();
+    };
+
+    if (gapi.client.getToken() === null) {
+      tokenClient.requestAccessToken({prompt: 'consent'});
+    } else {
+      tokenClient.requestAccessToken({prompt: ''});
+    }
+  }
+
+  // 頁面初始化啟動
   window.onload = function() {
     if (typeof init === 'function') init();
   };
